@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.8.34330.188
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "bpqapi", "bpqapi\bpqapi.csproj", "{ED33765D-F23D-46C4-99A3-3F996F2146A0}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "bpqapi-tests", "bpqapi-tests\bpqapi-tests.csproj", "{C4D1BEF5-4B3E-4FC7-ACF2-2B122231E6EC}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{ED33765D-F23D-46C4-99A3-3F996F2146A0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{ED33765D-F23D-46C4-99A3-3F996F2146A0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{ED33765D-F23D-46C4-99A3-3F996F2146A0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{ED33765D-F23D-46C4-99A3-3F996F2146A0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C4D1BEF5-4B3E-4FC7-ACF2-2B122231E6EC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C4D1BEF5-4B3E-4FC7-ACF2-2B122231E6EC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C4D1BEF5-4B3E-4FC7-ACF2-2B122231E6EC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C4D1BEF5-4B3E-4FC7-ACF2-2B122231E6EC}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {EEE8C17C-27A9-40CE-913A-935232CE26EF}
+	EndGlobalSection
+EndGlobal
