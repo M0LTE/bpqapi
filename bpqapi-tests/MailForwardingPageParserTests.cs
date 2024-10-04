@@ -195,7 +195,7 @@ public class MailForwardingPageParserTests
                     Max size to Send <input value=30000 size=3 name=MaxTX>
                     <br>
                     <br>
-                    Max Size to Receive <input value=30000 size=3 name=MaxRX>
+                    Max Size to Receive <input value=30001 size=3 name=MaxRX>
                     <br>
                     <br>
                     Max age for Bulls <input value=60 size=3 name=MaxAge>
@@ -216,7 +216,9 @@ public class MailForwardingPageParserTests
                     <br/>
                     Aliases<br/>
                     <br/>
-                    <textarea rows=8 cols=12 name=Aliases></textarea>
+                    <textarea rows=8 cols=12 name=Aliases>TEST
+LINE 2
+</textarea>
                     <br>
                     <br>
                     <input name=Submit value=Update type=submit class='btn'>
@@ -235,13 +237,13 @@ public class MailForwardingPageParserTests
     {
 		var options = MailForwardingPageParser.ParseOptions(getRequestToMailFwd);
         options.MaxSizeToSend.Should().Be(30000);
-        options.MaxSizeToReceive.Should().Be(30000);
+        options.MaxSizeToReceive.Should().Be(30001);
         options.MaxAgeForBulls.Should().Be(TimeSpan.FromDays(60));
         options.WarnIfNoRouteForPOrT.Should().BeTrue();
-        options.UseLocalTime.Should().BeTrue();
+        options.UseLocalTime.Should().BeFalse();
         options.SendPMessagesToMoreThanOneBbs.Should().BeTrue();
-        options.Use4CharContinentCodes.Should().BeTrue();
-        options.Aliases.Should().BeEmpty();
+        options.Use4CharContinentCodes.Should().BeFalse();
+        options.Aliases.Should().BeEquivalentTo("TEST", "LINE 2");
     }
 
     private const string postRequestToFwdList = @"GB7BDH|GB7BEX|GB7BPQ|GB7BRK|GB7BSK|GB7CIP|GB7HIB|GB7IOW|GB7LAN|GB7LOX|GB7OXF|GB7RDG|M5MPC|</body></html>";

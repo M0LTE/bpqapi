@@ -5,10 +5,10 @@ namespace bpqapi.Controllers;
 
 [ApiController]
 [Route("[controller]")]
-public class MailManagementController : ControllerBase
+public class MailManagementController(BpqUiService bpqUiService) : ControllerBase
 {
     [HttpGet("options")]
-    public ForwardingOptions GetOptions()
+    public async Task<ForwardingOptions> GetOptions()
     {
         // get options from http://gb7rdg-node:8008/Mail/FWD?M0000FAB73A83
 
