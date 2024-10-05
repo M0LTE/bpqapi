@@ -10,18 +10,15 @@ public class MailManagementController(BpqUiService bpqUiService) : ControllerBas
     [HttpGet("options")]
     public async Task<ForwardingOptions> GetOptions()
     {
-        // get options from http://gb7rdg-node:8008/Mail/FWD?M0000FAB73A83
-
-        throw new NotImplementedException();
+        return await bpqUiService.GetForwardingOptions();
     }
 
     [HttpGet("partners")]
-    public ForwardingStation[] GetPartners()
+    public async Task<Dictionary<string, ForwardingStation>> GetMailForwardingPartners()
     {
-        // get list with post to http://gb7rdg-node:8008/Mail/FwdList.txt?M0000FAB73A83
+        var result = (await bpqUiService.GetMailForwardingPartners())
+            .ToDictionary(partner => partner.Callsign, partner => partner);
 
-        // for each one, post to http://gb7rdg-node:8008/Mail/FwdDetails?M0000FAB73A83
-
-        throw new NotImplementedException();
+        return result;
     }
 }

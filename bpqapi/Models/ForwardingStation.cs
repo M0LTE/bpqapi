@@ -1,8 +1,20 @@
-﻿namespace bpqapi.Models;
+﻿using System.Runtime.Serialization;
+using System.Text.Json.Serialization;
+
+namespace bpqapi.Models;
 
 public record ForwardingStation
 {
+    [JsonIgnore]
+    public string Callsign { get; set; } = "";
+
     public int QueueLength { get; set; }
+
+    public ForwardingConfig ForwardingConfig { get; set; } = new();
+}
+
+public record ForwardingConfig
+{
     public string[] To { get; set; } = [];
     public string[] At { get; set; } = [];
     public string[] Times { get; set; } = [];

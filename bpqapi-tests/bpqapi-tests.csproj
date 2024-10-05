@@ -11,6 +11,20 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="testdata\mailforwardingpage.html" />
+    <None Remove="testdata\mailsignonresponse.html" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="testdata\mailsignonresponse.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="testdata\mailforwardingpage.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="FluentAssertions" Version="6.12.1" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.6.0" />
     <PackageReference Include="xunit" Version="2.4.2" />
