@@ -2,7 +2,7 @@
 
 namespace bpqapi.Parsers;
 
-public class MailSignonResponseParser
+public class MailManagementSignonResponseParser
 {
     public static ParseResult<string> Parse(string html)
     {

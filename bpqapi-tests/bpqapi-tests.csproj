@@ -12,11 +12,15 @@
 
   <ItemGroup>
     <None Remove="testdata\mailforwardingpage.html" />
-    <None Remove="testdata\mailsignonresponse.html" />
+    <None Remove="testdata\mailmgmtsignonresponse.html" />
+    <None Remove="testdata\webmaillistingpage.html" />
   </ItemGroup>
 
   <ItemGroup>
-    <Content Include="testdata\mailsignonresponse.html">
+    <Content Include="testdata\webmaillistingpage.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="testdata\mailmgmtsignonresponse.html">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="testdata\mailforwardingpage.html">

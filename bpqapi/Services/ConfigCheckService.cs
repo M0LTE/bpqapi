@@ -12,18 +12,6 @@ public class ConfigCheckService(IOptions<BpqApiOptions> options, ILogger<ConfigC
             Environment.Exit(1);
         }
 
-        if (string.IsNullOrWhiteSpace(options.Value.SysopUsername))
-        {
-            logger.LogError("No value specified for bpq__sysopUsername in configuration. Exiting.");
-            Environment.Exit(1);
-        }
-
-        if (string.IsNullOrWhiteSpace(options.Value.SysopPassword))
-        {
-            logger.LogError("No value specified for bpq__sysopPassword in configuration. Exiting.");
-            Environment.Exit(1);
-        }
-
         return Task.CompletedTask;
     }
 

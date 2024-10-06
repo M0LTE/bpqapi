@@ -74,7 +74,7 @@ Current target: linux-arm
 
 ```
 docker pull m0lte/bpqapi
-docker run -e bpq__uri=http://your-node:8008 -e bpq__sysopUsername=youruser -e bpq__sysopPassword=yourpass -p 8080:8080 m0lte/bpqapi
+docker run -e bpq__uri=http://your-node:8008 -p 8080:8080 m0lte/bpqapi
 ```
 
 or, `docker-compose.yml`:
@@ -87,8 +87,6 @@ services:
         restart: unless-stopped
         environment:
             - bpq__uri=http://your-node:8008
-            - bpq__sysopUsername=youruser
-            - bpq__sysopPassword=yourpass
         ports:
             - 8080:8080
 ```
