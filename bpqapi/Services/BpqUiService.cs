@@ -45,7 +45,7 @@ public class BpqUiService(IOptions<BpqApiOptions> options, HttpClient httpClient
         return MailForwardingPageParser.ParseOptions(await pageResponse.Content.ReadAsStringAsync()).EnsureSuccess();
     }
 
-    private async Task<string> Authenticate()
+    public async Task<string> Authenticate()
     {
         var authResponse = await httpClient.PostAsync(new Uri(options.Uri, "Mail/Signon?Mail"), new FormUrlEncodedContent(new Dictionary<string, string>
         {
