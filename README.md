@@ -70,6 +70,8 @@ Sample response:
 
 ## Running under Docker
 
+Current target: linux-arm
+
 ```
 docker pull m0lte/bpqapi
 docker run -e bpq__uri=http://your-node:8008 -e bpq__sysopUsername=youruser -e bpq__sysopPassword=yourpass -p 8080:8080 m0lte/bpqapi
