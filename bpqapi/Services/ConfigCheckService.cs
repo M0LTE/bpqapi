@@ -2,7 +2,7 @@
 
 namespace bpqapi.Services;
 
-public class ConfigCheckService(IOptions<BpqApiOptions> options, ILogger<ConfigCheckService> logger, BpqUiService bpqUiService) : IHostedService
+public class ConfigCheckService(IOptions<BpqApiOptions> options, ILogger<ConfigCheckService> logger) : IHostedService
 {
     public Task StartAsync(CancellationToken cancellationToken)
     {

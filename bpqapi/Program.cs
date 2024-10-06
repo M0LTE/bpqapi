@@ -14,6 +14,7 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.Configure<BpqApiOptions>(builder.Configuration.GetSection("bpq"));
 builder.Services.AddSingleton<BpqUiService>();
+builder.Services.AddSingleton<BpqApiService>();
 builder.Services.AddHttpClient<BpqUiService>(client =>
 {
     client.Timeout = TimeSpan.FromSeconds(5);
