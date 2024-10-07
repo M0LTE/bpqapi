@@ -37,9 +37,22 @@ public class BpqApiServiceTests
 
         mheard.Should().NotBeEmpty();
     }
+
+    [Fact]
+    public async Task TestGetPorts()
+    {
+        var token = await target.GetToken();
+        var ports = await target.GetPorts(token.AccessToken);
+        ports.Should().HaveCountGreaterThan(0);
+
+        ports.All(p => !string.IsNullOrWhiteSpace(p.Driver)).Should().BeTrue();
+        ports.All(p => !string.IsNullOrWhiteSpace(p.Id)).Should().BeTrue();
+        ports.All(p => !string.IsNullOrWhiteSpace(p.State)).Should().BeTrue();
+        ports.All(p => p.Number != 0).Should().BeTrue();
+    }
 }
 
 internal class Options : IOptions<BpqApiOptions>
 {
-    public BpqApiOptions Value => new BpqApiOptions { Uri = new Uri("http://gb7rdg-node:8008") };
+    public BpqApiOptions Value => new() { Uri = new Uri("http://gb7rdg-node:8008") };
 }
