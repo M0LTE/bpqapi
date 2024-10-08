@@ -22,7 +22,7 @@ builder.Services.AddHttpClient<BpqUiService>(client =>
 
 builder.Services.AddSwaggerGen(c =>
 {
-    c.SwaggerDoc("v1", new OpenApiInfo { Title = "BasicAuth", Version = "v1" });
+    c.SwaggerDoc("v1", new OpenApiInfo { Title = "BPQ API", Version = "v1" });
     c.AddSecurityDefinition("basic", new OpenApiSecurityScheme
     {
         Name = "Basic authorisation",

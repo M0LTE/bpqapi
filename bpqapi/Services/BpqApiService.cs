@@ -1,5 +1,6 @@
-﻿using Microsoft.Extensions.Options;
-using System.Globalization;
+﻿using bpqapi.Controllers;
+using bpqapi.Models.BpqApi;
+using Microsoft.Extensions.Options;
 using System.Net.Http.Headers;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -21,19 +22,18 @@ public class BpqApiService(HttpClient httpClient, IOptions<BpqApiOptions> option
         return response;
     }
 
-    public async Task<MHeard[]> GetMheard(string accessToken, string port)
+    public async Task<BpqApiMheardElement[]> GetMheard(string accessToken, int port)
     {
         var response = await Get("api/mheardport?" + port, accessToken);
         response.EnsureSuccessStatusCode();
 
         var str = await response.Content.ReadAsStringAsync();
+        var result = JsonSerializer.Deserialize<BpqApiMheardElement[]>($"[{str}]")!; // fix up mistake
 
-        var result = JsonSerializer.Deserialize<BpqApiMheardElement[]>($"[{str}]")!;
-
-        return result.Select(r=>new MHeard(r)).ToArray();
+        return result.ToArray();
     }
 
-    public async Task<Port[]> GetPorts(string accessToken)
+    public async Task<GetPortsResponse> GetPorts(string accessToken)
     {
         var response = await Get("api/ports", accessToken);
 
@@ -48,64 +48,38 @@ public class BpqApiService(HttpClient httpClient, IOptions<BpqApiOptions> option
          */
 
         response.EnsureSuccessStatusCode();
-        var obj = await response.Content.ReadFromJsonAsync<BpqGetPortsResponse>();
-
-        return obj.Ports.ToArray();
+        return await response.Content.ReadFromJsonAsync<GetPortsResponse>();
     }
-}
 
-internal readonly record struct BpqGetPortsResponse
-{
-    public Port[] Ports { get; init; }
-}
-
-public readonly record struct Port
-{
-    public string Id { get; init; }
-    public string Driver { get; init; }
-    public int Number { get; init; }
-    public string State { get; init; }
-}
-
-public readonly record struct MHeard
-{
-    internal MHeard(BpqApiMheardElement r) : this()
+    public async Task<GetNodesResponse> GetNodes(string accessToken)
     {
-        Callsign = r.Callsign;
-        Packets = r.Packets;
-
-        // 2024-3-6 17:14:01
-        LastHeard = DateTime.ParseExact(r.LastHeard, "yyyy-M-d HH:mm:ss", CultureInfo.InvariantCulture);
+        var response = await Get("api/nodes", accessToken);
+        response.EnsureSuccessStatusCode();
+        return await response.Content.ReadFromJsonAsync<GetNodesResponse>();
     }
 
-    public string Callsign { get; init; }
-    public int Packets { get; init; }
-    public DateTime LastHeard { get; init; }
-}
+    public async Task<GetUsersResponse> GetUsers(string accessToken)
+    {
+        var response = await Get("api/users", accessToken);
+        response.EnsureSuccessStatusCode();
 
-internal readonly record struct BpqApiMheardElement
-{
-    [JsonPropertyName("callSign")]
-    public string Callsign { get; init; }
-    
-    [JsonPropertyName("port")]
-    public string Port { get; init; }
-    
-    [JsonPropertyName("packets")]
-    public int Packets { get; init; }
+        var json = await response.Content.ReadAsStringAsync();
+        json = json.Replace("\"Call\",", "\"Call\":"); // fix up mistake
 
-    [JsonPropertyName("lastHeard")]
-    public string LastHeard { get; init; }
-}
+        return JsonSerializer.Deserialize<GetUsersResponse>(json, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+    }
 
-public readonly record struct BpqGetAccessTokenResponse
-{
-    [JsonPropertyName("access_token")]
-    public string AccessToken { get; init; }
+    public async Task<GetInfoResponse> GetInfo(string accessToken)
+    {
+        var response = await Get("api/info", accessToken);
+        response.EnsureSuccessStatusCode();
+        return await response.Content.ReadFromJsonAsync<GetInfoResponse>();
+    }
 
-    [JsonPropertyName("expires_in")]
-    public int ExpiresIn { get; init; }
-
-    [JsonPropertyName("scope")]
-    public string Scope { get; init; }
+    public async Task<GetLinksResponse> GetLinks(string accessToken)
+    {
+        var response = await Get("api/links", accessToken);
+        response.EnsureSuccessStatusCode();
+        return await response.Content.ReadFromJsonAsync<GetLinksResponse>();
+    }
 }

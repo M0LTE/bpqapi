@@ -1,23 +1,34 @@
-﻿using bpqapi.Services;
+﻿using bpqapi.Models.BpqApi;
+using bpqapi.Services;
 using Microsoft.AspNetCore.Mvc;
 
 namespace bpqapi.Controllers;
 
 public class NodeController(BpqApiService bpqApiService) : ControllerBase
 {
-    [HttpGet("mheard")]
-    [ProducesResponseType(200, Type = typeof(MHeard[]))]
-    public async Task<IActionResult> Mheard(string port)
-    {
-        var token = (await bpqApiService.GetToken()).AccessToken;
-        return Ok(await bpqApiService.GetMheard(token, port));
-    }
+    private async Task<string> GetToken() => (await bpqApiService.GetToken()).AccessToken;
 
     [HttpGet("ports")]
-    [ProducesResponseType(200, Type = typeof(Port[]))]
-    public async Task<IActionResult> Ports()
-    {
-        var token = (await bpqApiService.GetToken()).AccessToken;
-        return Ok(await bpqApiService.GetPorts(token));
-    }
+    [ProducesResponseType(200, Type = typeof(GetPortsResponse))]
+    public async Task<IActionResult> Ports() => Ok(await bpqApiService.GetPorts(await GetToken()));
+
+    [HttpGet("nodes")]
+    [ProducesResponseType(200, Type = typeof(GetNodesResponse))]
+    public async Task<IActionResult> Nodes() => Ok(await bpqApiService.GetNodes(await GetToken()));
+
+    [HttpGet("users")]
+    [ProducesResponseType(200, Type = typeof(GetUsersResponse))]
+    public async Task<IActionResult> Users() => Ok(await bpqApiService.GetUsers(await GetToken()));
+
+    [HttpGet("info")]
+    [ProducesResponseType(200, Type = typeof(GetInfoResponse))]
+    public async Task<IActionResult> Info() => Ok(await bpqApiService.GetInfo(await GetToken()));
+
+    [HttpGet("links")]
+    [ProducesResponseType(200, Type = typeof(GetLinksResponse))]
+    public async Task<IActionResult> Links() => Ok(await bpqApiService.GetLinks(await GetToken()));
+
+    [HttpGet("mheard/{port}")]
+    [ProducesResponseType(200, Type = typeof(BpqApiMheardElement[]))]
+    public async Task<IActionResult> Mheard(int port) => Ok(await bpqApiService.GetMheard(await GetToken(), port));
 }

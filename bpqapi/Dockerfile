@@ -1,24 +1,21 @@
 #See https://aka.ms/customizecontainer to learn how to customize your debug container and how Visual Studio uses this Dockerfile to build your images for faster debugging.
 
-FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS base
-USER app
-WORKDIR /app
-EXPOSE 8080
+FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+ARG TARGETARCH
+WORKDIR /source
 
-FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
-ARG BUILD_CONFIGURATION=Release
-WORKDIR /src
-COPY ["bpqapi/bpqapi.csproj", "bpqapi/"]
-RUN dotnet restore "./bpqapi/./bpqapi.csproj"
+# copy csproj and restore as distinct layers
+COPY *.csproj .
+RUN dotnet restore -a $TARGETARCH
+
+# copy and publish app and libraries
 COPY . .
-WORKDIR "/src/bpqapi"
-RUN dotnet build "./bpqapi.csproj" -c $BUILD_CONFIGURATION -o /app/build
+RUN dotnet publish -a $TARGETARCH -o /app
 
-FROM build AS publish
-ARG BUILD_CONFIGURATION=Release
-RUN dotnet publish "./bpqapi.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
-
-FROM base AS final
+# final stage/image
+FROM mcr.microsoft.com/dotnet/aspnet:8.0
+EXPOSE 8080
 WORKDIR /app
-COPY --from=publish /app/publish .
-ENTRYPOINT ["dotnet", "bpqapi.dll"]
+COPY --from=build /app .
+USER $APP_UID
+ENTRYPOINT ["./bpqapi"]

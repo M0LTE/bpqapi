@@ -2,11 +2,6 @@
 using bpqapi.Services;
 using FluentAssertions;
 using Microsoft.Extensions.Options;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace bpqapi_tests;
 
@@ -33,7 +28,7 @@ public class BpqApiServiceTests
     {
         var token = await target.GetToken();
 
-        var mheard = await target.GetMheard(token.AccessToken, "2");
+        var mheard = await target.GetMheard(token.AccessToken, 2);
 
         mheard.Should().NotBeEmpty();
     }
@@ -42,13 +37,13 @@ public class BpqApiServiceTests
     public async Task TestGetPorts()
     {
         var token = await target.GetToken();
-        var ports = await target.GetPorts(token.AccessToken);
-        ports.Should().HaveCountGreaterThan(0);
+        var response = await target.GetPorts(token.AccessToken);
+        response.Ports.Should().HaveCountGreaterThan(0);
 
-        ports.All(p => !string.IsNullOrWhiteSpace(p.Driver)).Should().BeTrue();
-        ports.All(p => !string.IsNullOrWhiteSpace(p.Id)).Should().BeTrue();
-        ports.All(p => !string.IsNullOrWhiteSpace(p.State)).Should().BeTrue();
-        ports.All(p => p.Number != 0).Should().BeTrue();
+        response.Ports.All(p => !string.IsNullOrWhiteSpace(p.Driver)).Should().BeTrue();
+        response.Ports.All(p => !string.IsNullOrWhiteSpace(p.Id)).Should().BeTrue();
+        response.Ports.All(p => !string.IsNullOrWhiteSpace(p.State)).Should().BeTrue();
+        response.Ports.All(p => p.Number != 0).Should().BeTrue();
     }
 }
 
