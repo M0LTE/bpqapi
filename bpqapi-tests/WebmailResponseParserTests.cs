@@ -21,7 +21,8 @@ public class WebmailResponseParserTests
         mail[0].At.Should().Be("ARRL");
         mail[0].Date.Month.Should().Be(10);
         mail[0].Date.Day.Should().Be(16);
-        mail[0].State.Should().Be("BN");
+        mail[0].Type.Should().Be('B');
+        mail[0].State.Should().Be('N');
         mail[0].Length.Should().Be(26386);
         mail[0].Subject.Should().Be("October 2024 NTS Letter");
 

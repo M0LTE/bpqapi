@@ -11,7 +11,11 @@ builder.Services.AddHostedService<ConfigCheckService>();
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(c =>
+{
+    var filePath = Path.Combine(AppContext.BaseDirectory, "bpqapi.xml");
+    c.IncludeXmlComments(filePath);
+});
 builder.Services.Configure<BpqApiOptions>(builder.Configuration.GetSection("bpq"));
 builder.Services.AddSingleton<BpqUiService>();
 builder.Services.AddSingleton<BpqApiService>();

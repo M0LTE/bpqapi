@@ -5,7 +5,7 @@ namespace bpqapi.Parsers;
 
 public class WebmailListingParser
 {
-    public static ParseResult<(string token, MailItem[] mail)> Parse(string html)
+    public static ParseResult<(string token, MailListEntity[] mail)> Parse(string html)
     {
         try
         {
@@ -14,7 +14,7 @@ public class WebmailListingParser
 
             var token = doc.DocumentNode.SelectNodes("//a").First(n => n.GetAttributeValue("href", "").StartsWith("/WebMail/")).GetAttributeValue("href", "").Split('?').Last();
 
-            var mailItems = new List<MailItem>();
+            var mailItems = new List<MailListEntity>();
 
             var anchors = doc.DocumentNode.SelectNodes("//div[@id='main']/pre/a");
 
@@ -28,18 +28,19 @@ public class WebmailListingParser
                 var id = a.InnerText;
                 var day = text[..2];
                 var month = text[3..6];
-                var state = text[7..9];
+                var state = text[7..9].Trim();
                 var len = text[10..15];
                 var to = text[16..24];
                 var at = text[24..32];
                 var from = text[32..40];
                 var subject = text[40..];
 
-                var mailItem = new MailItem
+                var mailItem = new MailListEntity
                 {
                     Id = int.Parse(id),
                     Date = new MonthAndDay(months[month], int.Parse(day)),
-                    State = state.Trim(),
+                    Type = state[0],
+                    State = state[1],
                     Length = int.Parse(len),
                     To = to.Trim(),
                     At = at.Trim(),
@@ -50,11 +51,11 @@ public class WebmailListingParser
                 mailItems.Add(mailItem);
             }
 
-            return ParseResult<(string token, MailItem[] mail)>.CreateSuccess((token, mailItems.ToArray()));
+            return ParseResult<(string token, MailListEntity[] mail)>.CreateSuccess((token, mailItems.ToArray()));
         }
         catch (Exception ex)
         {
-            return ParseResult<(string token, MailItem[] mail)>.CreateFailure(ex, html);
+            return ParseResult<(string token, MailListEntity[] mail)>.CreateFailure(ex, html);
         }
     }
 

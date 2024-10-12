@@ -1,0 +1,128 @@
+﻿<!-- Version 5 11/11/2019 -->
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+    <style type="text/css">
+        input.btn:active {
+            background: black;
+            color: white;
+        }
+
+        submit.btn:active {
+            background: black;
+            color: white;
+        }
+
+        pre {
+            margin-left: 4px;
+            margin-right: 4px;
+            white-space: pre-wrap
+        }
+
+        #main {
+            width: 700px;
+            position: absolute;
+            left: 0px;
+            border: 2px solid;
+            background-color: #ffffff;
+        }
+    </style>
+    <script>
+        var Main;
+        var fromleft;
+        var txt;
+        function initialize(mainoffset) {
+            var w = window
+                , d = document
+                , e = d.documentElement
+                , g = d.getElementsByTagName('body')[0];
+            x = w.innerWidth;
+            y = w.innerHeight;
+            Main = document.getElementById("main");
+            txt = document.getElementById("txt");
+            w = x;
+            if (w > 920) {
+                w = 920;
+            }
+            fromleft = (x / 2) - (x - 150) / 2;
+            if (fromleft < 0) {
+                fromleft = 0;
+            }
+            Main.style.left = fromleft + "px";
+            Main.style.width = x - 150 + "px";
+            Main.style.height = y - mainoffset + "px";
+            txt.style.left = fromleft + "px";
+            txt.style.width = x - 150 + "px";
+            txt.style.height = y - mainoffset + "px";
+        }
+        function Reply(Num, Key) {
+            var param = "toolbar=yes,location=yes,directories=yes,status=yes,menubar=yes,scrollbars=yes,resizable=yes,titlebar=yes,toobar=yes";
+            window.open("/WebMail/Reply/" + Num + "?" + Key, "_self", param);
+        }
+    </script>
+    <title>WebMail</title>
+</head>
+<body background=/background.jpg onload=initialize(125) onresize=initialize(125)>
+    <h3 align=center>GB7RDG Webmail Interface - User M0LTE - Message 6925</h3>
+    <table align=center border=1 cellpadding=2 bgcolor=white>
+        <tr>
+            <td>
+                <a href="#" onclick="Reply('6925' ,'W3B8745EB'); return false;">Reply</a>
+            </td>
+            <td>
+                <a href=/WebMail/WMDel/6925?W3B8745EB>Kill Message</a>
+            </td>
+            <td>
+                <a href=/WebMail/WMNext?W3B8745EB>Next</a>
+            </td>
+            <td>
+                <a href=/WebMail/WMPrev?W3B8745EB>Previous</a>
+            </td>
+            <td>
+                <a href=/WebMail/WMSame?W3B8745EB>Back to List</a>
+            </td>
+        </tr>
+    </table>
+    <br>
+    <div align=center id="main">
+        <textarea id="txt" style="overflow:auto;" align=left>From: M0LTE@GB7RDG.#42.GBR.EURO
+To: 2E0JJI
+Type/Status: PF
+Date/Time: 12-Oct 13:20Z
+Bid: 6925_GB7RDG
+Title: Re: Testing WP routing
+
+What hath god wrought
+
+Sent from my iPhone
+
+> On 12 Oct 2024, at 13:06, 2E0JJI@gb7lox.#19.gbr.euro wrote:
+> 
+> ﻿MID: 210_GB7LOX
+> Date: 2024/10/12 12:06
+> Type: Private
+> From: 2E0JJI@GB7LOX.#19.GBR.EURO
+> To: M0LTE@GB7RDG
+> Subject: Testing WP routing
+> Mbo: GB7LOX
+> Content-Type: text/plain
+> Content-Transfer-Encoding: 8bit
+> Body: 158
+> 
+> R:241012/1206Z 210@GB7LOX.GB7LOX.#19.GBR.EURO LinBPQ6.0.24
+> 
+> This is a test of whether the WP routing can handle short addresses.
+> 
+> 
+> Sent from my iPhone
+> 
+> 
+
+***
+
+[End of Message #6925 from M0LTE]
+</textarea>
+    </div>
+</body>
+</html>

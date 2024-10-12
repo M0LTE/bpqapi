@@ -2,7 +2,9 @@
 using bpqapi.Parsers;
 using Microsoft.Extensions.Options;
 using System.Collections.Concurrent;
+using System.IO;
 using System.Text;
+using static System.Net.WebRequestMethods;
 
 namespace bpqapi.Services;
 
@@ -73,7 +75,7 @@ public class BpqUiService(IOptions<BpqApiOptions> options, HttpClient httpClient
     /// <param name="user">Callsign of BBS user</param>
     /// <param name="password">Password for that callsign</param>
     /// <returns></returns>
-    public async Task<(string token, MailItem[] items)> WebmailAuth(string user, string password)
+    public async Task<(string token, MailListEntity[] items)> WebmailAuth(string user, string password)
     {
         var authResponse = await httpClient.PostAsync(new Uri(options.Uri, "WebMail/Signon"), new FormUrlEncodedContent(new Dictionary<string, string>
         {
@@ -111,31 +113,79 @@ public class BpqUiService(IOptions<BpqApiOptions> options, HttpClient httpClient
 
     private string? lastUser, lassPassword, lastToken;
 
-    public async Task<MailItem[]> GetAllMail(string user, string password)
+    /// <summary>
+    /// All mail of all types
+    /// </summary>
+    public async Task<MailListEntity[]> GetWebmailAllMailList(string user, string password)
     {
-        var (_, mail) = await WebmailAuth(user, password);
-        return mail;
+        return await GetMail(user, password, "WMALL");
     }
 
-    public async Task<MailItem[]> GetSentMail(string user, string password)
+    /// <summary>
+    /// All bulletins
+    /// </summary>
+    public async Task<MailListEntity[]> GetWebmailBullsList(string user, string password)
+    {
+        return await GetMail(user, password, "WMB");
+    }
+
+    /// <summary>
+    /// All personal mail, not just mine
+    /// </summary>
+    public async Task<MailListEntity[]> GetWebmailPersonalsList(string user, string password)
+    {
+        return await GetMail(user, password, "WMP");
+    }
+
+    /// <summary>
+    /// Mail to/from me
+    /// </summary>
+    public async Task<MailListEntity[]> GetMyMail(string user, string password)
+    {
+        return await GetMail(user, password, "WMMine");
+    }
+
+    /// <summary>
+    /// Mail from me
+    /// </summary>
+    public async Task<MailListEntity[]> GetWebmailSentMail(string user, string password)
     {
         return await GetMail(user, password, "WMfromMe");
     }
 
-    public async Task<MailItem[]> GetInbox(string user, string password)
+    /// <summary>
+    /// Mail to me
+    /// </summary>
+    public async Task<MailListEntity[]> GetWebmailInbox(string user, string password)
     {
         return await GetMail(user, password, "WMtoMe");
     }
 
-    private async Task<MailItem[]> GetMail(string user, string password, string path)
-    { 
+    private async Task<MailListEntity[]> GetMail(string user, string password, string path)
+    {
         // http://gb7rdg-node:8008/WebMail/WMfromMe?W3B8745EB
-        if (lastToken == null)
+        await AssureToken(user, password);
+        var html = await httpClient.GetStringAsync(new Uri(options.Uri, $"WebMail/{path}?{lastToken}"));
+        var (_, mail) = WebmailListingParser.Parse(html).EnsureSuccess();
+        return mail;
+    }
+
+    private async Task AssureToken(string user, string password)
+    {
+        if (lastUser != user || lassPassword != password || lastToken == null)
         {
             await WebmailAuth(user, password);
         }
-        var html = await httpClient.GetStringAsync(new Uri(options.Uri, $"WebMail/{path}?{lastToken}"));
-        var (_, mail) = WebmailListingParser.Parse(html).EnsureSuccess();
+    }
+
+    public async Task<MailEntity?> GetWebmailItem(string user, string password, int id)
+    {
+        await AssureToken(user, password);
+
+        // http://gb7rdg-node:8008/WebMail/WM?W3B8745EB&6925
+
+        var html = await httpClient.GetStringAsync(new Uri(options.Uri, $"WebMail/WM?{lastToken}&{id}"));
+        var mail = WebmailParser.Parse(html).EnsureSuccess();
         return mail;
     }
 }

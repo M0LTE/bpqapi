@@ -13,10 +13,22 @@
   <ItemGroup>
     <None Remove="testdata\mailforwardingpage.html" />
     <None Remove="testdata\mailmgmtsignonresponse.html" />
+    <None Remove="testdata\mailsample-01.html" />
+    <None Remove="testdata\mailsample-02.html" />
+    <None Remove="testdata\response_1728752234250.json" />
     <None Remove="testdata\webmaillistingpage.html" />
   </ItemGroup>
 
   <ItemGroup>
+    <Content Include="testdata\mailsample-01.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="testdata\mailsample-02.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="testdata\response_1728752234250.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="testdata\webmaillistingpage.html">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
