@@ -89,6 +89,9 @@ public class BpqUiService(IOptions<BpqApiOptions> options, HttpClient httpClient
 
         if (parseResult.Success)
         {
+            lastUser = user;
+            lassPassword = password;
+            lastToken = parseResult.Value.token;
             return parseResult.Value;
         }
         else
@@ -106,10 +109,33 @@ public class BpqUiService(IOptions<BpqApiOptions> options, HttpClient httpClient
         }
     }
 
-    public async Task<MailItem[]> GetMail(string user, string password)
-    {
-        var (token, mail) = await WebmailAuth(user, password);
+    private string? lastUser, lassPassword, lastToken;
 
+    public async Task<MailItem[]> GetAllMail(string user, string password)
+    {
+        var (_, mail) = await WebmailAuth(user, password);
+        return mail;
+    }
+
+    public async Task<MailItem[]> GetSentMail(string user, string password)
+    {
+        return await GetMail(user, password, "WMfromMe");
+    }
+
+    public async Task<MailItem[]> GetInbox(string user, string password)
+    {
+        return await GetMail(user, password, "WMtoMe");
+    }
+
+    private async Task<MailItem[]> GetMail(string user, string password, string path)
+    { 
+        // http://gb7rdg-node:8008/WebMail/WMfromMe?W3B8745EB
+        if (lastToken == null)
+        {
+            await WebmailAuth(user, password);
+        }
+        var html = await httpClient.GetStringAsync(new Uri(options.Uri, $"WebMail/{path}?{lastToken}"));
+        var (_, mail) = WebmailListingParser.Parse(html).EnsureSuccess();
         return mail;
     }
 }
