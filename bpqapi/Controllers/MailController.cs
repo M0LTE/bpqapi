@@ -162,4 +162,28 @@ public class MailController(BpqUiService bpqUiService) : ControllerBase
             return Unauthorized("BPQ rejected that BBS login");
         }
     }
+
+    /// <summary>
+    /// Send a message
+    /// </summary>
+    [HttpPost("send")]
+    public async Task<IActionResult> SendMessage([FromBody] SendMailEntity mail)
+    {
+        var header = HttpContext.ParseBasicAuthHeader();
+
+        if (header == null)
+        {
+            return BadRequest("BBS callsign and password required as basic auth header");
+        }
+
+        try
+        {
+            await bpqUiService.SendWebmail(header.Value.User, header.Value.Password, mail);
+            return Ok();
+        }
+        catch (LoginFailedException)
+        {
+            return Unauthorized("BPQ rejected that BBS login");
+        }
+    }
 }

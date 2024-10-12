@@ -1,10 +1,8 @@
 ﻿using bpqapi.Models;
 using bpqapi.Parsers;
 using Microsoft.Extensions.Options;
-using System.Collections.Concurrent;
-using System.IO;
+using System.Net.Http.Headers;
 using System.Text;
-using static System.Net.WebRequestMethods;
 
 namespace bpqapi.Services;
 
@@ -187,6 +185,45 @@ public class BpqUiService(IOptions<BpqApiOptions> options, HttpClient httpClient
         var html = await httpClient.GetStringAsync(new Uri(options.Uri, $"WebMail/WM?{lastToken}&{id}"));
         var mail = WebmailParser.Parse(html).EnsureSuccess();
         return mail;
+    }
+
+    public async Task SendWebmail(string user, string password, SendMailEntity mail)
+    {
+        // http://gb7rdg-node:8008/WebMail/EMSave?W7A4CFEBB
+
+        await AssureToken(user, password);
+
+        var form = new MultipartFormDataContent()
+        {
+            { BuildStringContent("To", mail.To), "To" },
+            { BuildStringContent("Subj", mail.Subject), "Subj" },
+            //{ new ByteArrayContent([]),"myFile[]","dummy.txt"},
+            { BuildStringContent("Type", mail.Type.ToString()), "Type" },
+            { BuildStringContent("BID", mail.Bid), "BID" },
+            //{ new ByteArrayContent([]),"myFile2[]","dummy.txt"},
+            //{ new ByteArrayContent([]),"myFile3[]","dummy.txt"},
+            { BuildStringContent("Msg", mail.Body), "Msg" },
+            { BuildStringContent("Send", "Send"), "Send" },
+        };
+
+        var request = new HttpRequestMessage(HttpMethod.Post, new Uri(options.Uri, $"WebMail/EMSave?{lastToken}"));
+        request.Content = form;
+
+        var listResponse = await httpClient.SendAsync(request);
+        listResponse.EnsureSuccessStatusCode();
+
+        var response = await listResponse.Content.ReadAsStringAsync();
+    }
+
+    private static StringContent BuildStringContent(string name, string content)
+    {
+        var sc = new StringContent(content, Encoding.UTF8, "text/plain");
+        sc.Headers.Remove("Content-Type");
+        sc.Headers.ContentDisposition = new ContentDispositionHeaderValue("form-data")
+        {
+            Name = $"\"{name}\"", // quotes are necessary else we crash BPQ
+        };
+        return sc;
     }
 }
 

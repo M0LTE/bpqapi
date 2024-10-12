@@ -2,6 +2,7 @@
 using bpqapi.Services;
 using FluentAssertions;
 using Microsoft.Extensions.Options;
+using System.Net;
 
 namespace bpqapi_tests;
 
@@ -44,6 +45,20 @@ public class BpqApiServiceTests
         response.Ports.All(p => !string.IsNullOrWhiteSpace(p.Id)).Should().BeTrue();
         response.Ports.All(p => !string.IsNullOrWhiteSpace(p.State)).Should().BeTrue();
         response.Ports.All(p => p.Number != 0).Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task TestSendMail()
+    {
+        var bpqUiService = new BpqUiService(new Options(), new HttpClient(new HttpClientHandler { AutomaticDecompression = DecompressionMethods.Deflate | DecompressionMethods.GZip }));
+        await bpqUiService.SendWebmail("m0lte", "xxx", new bpqapi.Models.SendMailEntity
+        {
+            To = "test",
+            Bid = "",
+            Body = "test",
+            Subject = "test23467",
+            Type = 'P'
+        });
     }
 }
 
