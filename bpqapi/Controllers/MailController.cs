@@ -17,7 +17,7 @@ public class MailController(BpqUiService bpqUiService) : ControllerBase
     /// <param name="id"></param>
     /// <returns></returns>
     [HttpGet("{id}")]
-    [ProducesResponseType(typeof(MailEntity[]), 200)]
+    [ProducesResponseType(typeof(MailEntity), 200)]
     public async Task<IActionResult> GetMailItem(int id)
     {
         var header = HttpContext.ParseBasicAuthHeader();
