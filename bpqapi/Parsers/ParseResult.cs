@@ -10,9 +10,7 @@ public record struct ParseResult<T> where T : notnull
     {
         if (!Success)
         {
-            var temp = Path.GetTempFileName();
-            File.WriteAllText(temp, Input);
-            throw new Exception($"{typeof(T).Name} parsing failed. Input saved: {temp}", Exception);
+            DebugWriter.LogAndThrow<T>(Input, Exception!);
         }
 
         return Value;

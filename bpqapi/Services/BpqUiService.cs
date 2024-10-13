@@ -104,7 +104,8 @@ public class BpqUiService(IOptions<BpqApiOptions> options, HttpClient httpClient
             }
             else
             {
-                throw new Exception("Unknown error parsing webmail response");
+                DebugWriter.LogAndThrow<WebmailListingParser>(html, new Exception("Unknown error parsing webmail response"));
+                return default;
             }
         }
     }
