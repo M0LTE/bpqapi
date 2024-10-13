@@ -16,6 +16,7 @@
     <None Remove="testdata\mailsample-01.html" />
     <None Remove="testdata\mailsample-02.html" />
     <None Remove="testdata\response_1728752234250.json" />
+    <None Remove="testdata\steve-broken-login-response-page.html" />
     <None Remove="testdata\webmaillistingpage.html" />
   </ItemGroup>
 
@@ -27,6 +28,9 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="testdata\response_1728752234250.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="testdata\steve-broken-login-response-page.html">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="testdata\webmaillistingpage.html">

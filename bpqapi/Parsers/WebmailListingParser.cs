@@ -67,7 +67,7 @@ public class WebmailListingParser
             doc.LoadHtml(html);
             var title = doc.DocumentNode.SelectSingleNode("//title")?.InnerText;
 
-            if (title == "BPQ32 Mail Server Access")
+            if (title == "BPQ32 Mail Server Access" || title == "WebMail")
             {
                 return ParseResult<bool>.CreateSuccess(true); // is login page
             }
