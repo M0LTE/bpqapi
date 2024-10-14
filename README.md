@@ -12,69 +12,13 @@ So far just a couple of mail management pages have been made available.
 
 There is a swagger at `/swagger/index.html`
 
-Sample request:
-
-```
-curl http://localhost:5177/MailManagement/partners
-```
-
-Sample response:
-
-```
-{
-  "GB7BEX": {
-    "queueLength": 0,
-    "forwardingConfig": {
-      "to": [],
-      "at": [
-        "OARC",
-        "GBR",
-        "WW"
-      ],
-      "times": [],
-      "connectScript": [
-        "PAUSE 3",
-        "INTERLOCK 3",
-        "NC 3 !GB7BEX"
-      ],
-      "hierarchicalRoutes": [],
-      "hr": [
-        "#38.GBR.EURO"
-      ],
-      "bbsHa": "GB7BEX.#38.GBR.EURO",
-      "enableForwarding": true,
-      "forwardingInterval": "00:56:40",
-      "requestReverse": false,
-      "reverseInterval": "00:56:40",
-      "sendNewMessagesWithoutWaiting": true,
-      "fbbBlocked": true,
-      "maxBlock": 1000,
-      "sendPersonalMailOnly": false,
-      "allowBinary": true,
-      "useB1Protocol": false,
-      "useB2Protocol": true,
-      "sendCtrlZInsteadOfEx": false,
-      "incomingConnectTimeout": "00:02:00"
-    }
-  },
-  "GB7RDG": {
-    "queueLength": 0,
-    "forwardingConfig": {
-      "to": [],
-...
-      "incomingConnectTimeout": "00:02:00"
-    }
-  }
-}
-```
-
 ## Running under Docker
 
-Current target: linux-arm
+Current targets: linux/arm/v7, linux/amd64
 
 ```
 docker pull m0lte/bpqapi
-docker run -e bpq__uri=http://your-node:8008 -p 8080:8080 m0lte/bpqapi
+docker run -e bpq__uri=http://your-node:8008 -p 8080:8080 --network host m0lte/bpqapi
 ```
 
 or, `docker-compose.yml`:
@@ -89,6 +33,7 @@ services:
             - bpq__uri=http://your-node:8008
         ports:
             - 8080:8080
+        network_mode: host
 ```
 
 and to start: 
@@ -98,6 +43,15 @@ docker compose up -d
 ```
 
 to update:
+
+```
+docker pull m0lte/bpqapi
+docker run ...
+```
+
+or
+
+
 ```
 docker compose pull
 docker compose stop
