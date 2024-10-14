@@ -5,13 +5,13 @@ using Microsoft.AspNetCore.Mvc;
 namespace bpqapi.Controllers;
 
 [ApiController]
-[Route("[controller]")]
+[Route("mail")]
 public class MailManagementController(BpqUiService bpqUiService) : ControllerBase
 {
     private const string AuthError = "Sysop username and password required as basic auth header";
     private const string LoginError = "BPQ rejected that sysop login";
 
-    [HttpGet("options")]
+    [HttpGet("options/bpq")]
     [ProducesResponseType(typeof(ForwardingOptions), 200)]
     public async Task<IActionResult> GetOptions()
     {
