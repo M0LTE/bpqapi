@@ -25,7 +25,9 @@ docker run -e bpq__uri=http://your-node:8008 -p 8080:8080 m0lte/bpqapi
 
 change the port it is exposed at by changing the second part of the `-p` argument.
 
-or, `docker-compose.yml`:
+or, for something a bit more permanent: 
+
+`docker-compose.yml`:
 
 ```
 name: bpqapi
