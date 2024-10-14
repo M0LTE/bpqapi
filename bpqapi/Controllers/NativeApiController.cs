@@ -4,7 +4,12 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace bpqapi.Controllers;
 
-public class NodeController(BpqApiService bpqApiService) : ControllerBase
+/// <summary>
+/// Makes a rough attempt at passing through the underlying API structure, where possible.
+/// </summary>
+/// <param name="bpqApiService"></param>
+[Route("native")]
+public class NativeApiController(BpqApiService bpqApiService) : ControllerBase
 {
     private async Task<string> GetToken() => (await bpqApiService.GetToken()).AccessToken;
 
