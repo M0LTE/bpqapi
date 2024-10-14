@@ -63,7 +63,7 @@ Any which way, API available at http://your-node:8080/swagger
 
 ## InfluxDB Metrics
 
-If you use the TICK stack, you might like to know that you can configure Telegraf's http plugin to read http://your-node:8080/metrics/line-protocol with Basic authentication (sysop username/password) to pull some metrics.
+If you use the TICK stack, you might like to know that you can configure Telegraf's http plugin to read http://your-node:8080/metrics/line-protocol with Basic authentication (sysop username/password) to pull some metrics into Grafana using Telegraf.
 
 Metrics supported:
 
