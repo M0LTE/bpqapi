@@ -67,4 +67,5 @@ If you use the TICK stack, you might like to know that you can configure Telegra
 
 Metrics supported:
 
-- mail queue length per partner
+- packetmail
+  - queue_length
