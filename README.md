@@ -12,14 +12,18 @@ So far just a couple of mail management pages have been made available.
 
 There is a swagger at `/swagger/index.html`
 
+`500 Internal Server Error` responses are par for the course at this stage, as this is a work in progress, and underlying changes may happen in BPQ. Please contact me to tell me how it broke, supplying the .tmp file it may have given you when it broke.
+
 ## Running under Docker
 
 Current targets: linux/arm/v7, linux/amd64
 
 ```
 docker pull m0lte/bpqapi
-docker run -e bpq__uri=http://your-node:8008 -p 8080:8080 --network host m0lte/bpqapi
+docker run -e bpq__uri=http://your-node:8008 -p 8080:8080 m0lte/bpqapi
 ```
+
+change the port it is exposed at by changing the second part of the `-p` argument.
 
 or, `docker-compose.yml`:
 
@@ -33,7 +37,6 @@ services:
             - bpq__uri=http://your-node:8008
         ports:
             - 8080:8080
-        network_mode: host
 ```
 
 and to start: 
