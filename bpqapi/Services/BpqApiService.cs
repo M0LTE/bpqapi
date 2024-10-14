@@ -1,9 +1,7 @@
-﻿using bpqapi.Controllers;
-using bpqapi.Models.BpqApi;
+﻿using bpqapi.Models.BpqApi;
 using Microsoft.Extensions.Options;
 using System.Net.Http.Headers;
 using System.Text.Json;
-using System.Text.Json.Serialization;
 
 namespace bpqapi.Services;
 
@@ -22,9 +20,9 @@ public class BpqApiService(HttpClient httpClient, IOptions<BpqApiOptions> option
         return response;
     }
 
-    public async Task<NativeMheardElement[]> GetMheard(string accessToken, int port)
+    public async Task<NativeMheardElement[]> GetMheard(string accessToken, int portNumber)
     {
-        var response = await Get("api/mheardport?" + port, accessToken);
+        var response = await Get("api/mheardport?" + portNumber, accessToken);
         response.EnsureSuccessStatusCode();
 
         var str = await response.Content.ReadAsStringAsync();

@@ -23,10 +23,10 @@ public readonly record struct NativeGetInfoResponse
 
     public readonly record struct BpqInfo
     {
-        public string NodeCall { get; init; }
-        public string Alias { get; init; }
-        public string Locator { get; init; }
-        public string Version { get; init; }
+        public string? NodeCall { get; init; }
+        public string? Alias { get; init; }
+        public string? Locator { get; init; }
+        public string? Version { get; init; }
     }
 }
 
@@ -77,7 +77,7 @@ public readonly record struct NativeMheardElement
     public string Callsign { get; init; }
 
     [JsonPropertyName("port")]
-    public string Port { get; init; }
+    public string PortNumber { get; init; }
 
     [JsonPropertyName("packets")]
     public int Packets { get; init; }
