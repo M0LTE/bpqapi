@@ -26,7 +26,7 @@ public class MetricsController(BpqUiService bpqUiService) : ControllerBase
 
         try
         {
-            var partners = await GetCachedMailPartners(header.Value.User, header.Value.Password);
+            var (partners, dt) = await GetCachedMailPartners(header.Value.User, header.Value.Password);
 
             /*
              * timestamp is nanoseconds
@@ -38,11 +38,50 @@ public class MetricsController(BpqUiService bpqUiService) : ControllerBase
 
             var sb = new StringBuilder();
 
-            var ns = (DateTime.UtcNow - DateTime.UnixEpoch).TotalNanoseconds;
+            var ns = (dt - DateTime.UnixEpoch).TotalNanoseconds;
 
             foreach (var partner in partners)
             {
                 sb.Append($"packetmail,partner={partner.Callsign} queue_length={partner.QueueLength} {ns:0}\n");
+            }
+
+            return Ok(sb.ToString());
+        }
+        catch (LoginFailedException)
+        {
+            return Unauthorized(LoginError);
+        }
+    }
+
+    [HttpGet("prometheus")]
+    public async Task<IActionResult> GetPromethiusMetrics()
+    {
+        var header = HttpContext.ParseBasicAuthHeader();
+
+        if (header == null)
+        {
+            return BadRequest(AuthError);
+        }
+
+        try
+        {
+            var (partners, timestamp) = await GetCachedMailPartners(header.Value.User, header.Value.Password);
+
+            var ts = (timestamp - DateTime.UnixEpoch).TotalMilliseconds;
+            /*
+    # HELP http_requests_total The total number of HTTP requests.
+    # TYPE http_requests_total counter
+    http_requests_total{method="post",code="200"} 1027 1395066363000
+    http_requests_total{method="post",code="400"}    3 1395066363000
+             */
+
+            var sb = new StringBuilder();
+            sb.AppendLine("# HELP packetmail_queue_length The number of messages in the packetmail queue");
+            sb.AppendLine("# TYPE packetmail_queue_length gauge");
+
+            foreach (var partner in partners)
+            {
+                sb.Append($"packetmail_queue_length{{partner=\"{partner.Callsign}\"}} {partner.QueueLength} {ts:0}\n");
             }
 
             return Ok(sb.ToString());
@@ -65,7 +104,7 @@ public class MetricsController(BpqUiService bpqUiService) : ControllerBase
 
         try
         {
-            var partners = await GetCachedMailPartners(header.Value.User, header.Value.Password);
+            var (partners, _) = await GetCachedMailPartners(header.Value.User, header.Value.Password);
 
             return Ok(partners.ToDictionary(item => item.Callsign, item => new { queueLength = item.QueueLength }));
         }
@@ -76,10 +115,10 @@ public class MetricsController(BpqUiService bpqUiService) : ControllerBase
     }
 
     [MemoryCache(59)]
-    private async Task<ForwardingStation[]> GetCachedMailPartners(string user, string password)
+    private async Task<(ForwardingStation[], DateTime)> GetCachedMailPartners(string user, string password)
     {
         var partners = await bpqUiService.GetMailForwardingPartners(user, password);
 
-        return partners;
+        return (partners, DateTime.UtcNow);
     }
 }
