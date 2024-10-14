@@ -2,7 +2,7 @@
 
 namespace bpqapi.Models.BpqApi;
 
-public readonly record struct GetLinksResponse
+public readonly record struct NativeGetLinksResponse
 {
     public Link[] Links { get; init; }
 
@@ -17,7 +17,7 @@ public readonly record struct GetLinksResponse
     }
 }
 
-public readonly record struct GetInfoResponse
+public readonly record struct NativeGetInfoResponse
 {
     public BpqInfo Info { get; init; }
 
@@ -30,7 +30,7 @@ public readonly record struct GetInfoResponse
     }
 }
 
-public readonly record struct GetUsersResponse
+public readonly record struct NativeGetUsersResponse
 {
     public User[] Users { get; init; }
 
@@ -40,7 +40,7 @@ public readonly record struct GetUsersResponse
     }
 }
 
-public readonly record struct GetNodesResponse
+public readonly record struct NativeGetNodesResponse
 {
     public Node[] Nodes { get; init; }
 
@@ -59,7 +59,7 @@ public readonly record struct GetNodesResponse
     }
 }
 
-public readonly record struct GetPortsResponse
+public readonly record struct NativeGetPortsResponse
 {
     public Port[] Ports { get; init; }
     public readonly record struct Port
@@ -71,7 +71,7 @@ public readonly record struct GetPortsResponse
     }
 }
 
-public readonly record struct BpqApiMheardElement
+public readonly record struct NativeMheardElement
 {
     [JsonPropertyName("callSign")]
     public string Callsign { get; init; }

@@ -22,18 +22,18 @@ public class BpqApiService(HttpClient httpClient, IOptions<BpqApiOptions> option
         return response;
     }
 
-    public async Task<BpqApiMheardElement[]> GetMheard(string accessToken, int port)
+    public async Task<NativeMheardElement[]> GetMheard(string accessToken, int port)
     {
         var response = await Get("api/mheardport?" + port, accessToken);
         response.EnsureSuccessStatusCode();
 
         var str = await response.Content.ReadAsStringAsync();
-        var result = JsonSerializer.Deserialize<BpqApiMheardElement[]>($"[{str}]")!; // fix up mistake
+        var result = JsonSerializer.Deserialize<NativeMheardElement[]>($"[{str}]")!; // fix up mistake
 
         return result.ToArray();
     }
 
-    public async Task<GetPortsResponse> GetPorts(string accessToken)
+    public async Task<NativeGetPortsResponse> GetPorts(string accessToken)
     {
         var response = await Get("api/ports", accessToken);
 
@@ -48,17 +48,17 @@ public class BpqApiService(HttpClient httpClient, IOptions<BpqApiOptions> option
          */
 
         response.EnsureSuccessStatusCode();
-        return await response.Content.ReadFromJsonAsync<GetPortsResponse>();
+        return await response.Content.ReadFromJsonAsync<NativeGetPortsResponse>();
     }
 
-    public async Task<GetNodesResponse> GetNodes(string accessToken)
+    public async Task<NativeGetNodesResponse> GetNodes(string accessToken)
     {
         var response = await Get("api/nodes", accessToken);
         response.EnsureSuccessStatusCode();
-        return await response.Content.ReadFromJsonAsync<GetNodesResponse>();
+        return await response.Content.ReadFromJsonAsync<NativeGetNodesResponse>();
     }
 
-    public async Task<GetUsersResponse> GetUsers(string accessToken)
+    public async Task<NativeGetUsersResponse> GetUsers(string accessToken)
     {
         var response = await Get("api/users", accessToken);
         response.EnsureSuccessStatusCode();
@@ -66,20 +66,20 @@ public class BpqApiService(HttpClient httpClient, IOptions<BpqApiOptions> option
         var json = await response.Content.ReadAsStringAsync();
         json = json.Replace("\"Call\",", "\"Call\":"); // fix up mistake
 
-        return JsonSerializer.Deserialize<GetUsersResponse>(json, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+        return JsonSerializer.Deserialize<NativeGetUsersResponse>(json, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
     }
 
-    public async Task<GetInfoResponse> GetInfo(string accessToken)
+    public async Task<NativeGetInfoResponse> GetInfo(string accessToken)
     {
         var response = await Get("api/info", accessToken);
         response.EnsureSuccessStatusCode();
-        return await response.Content.ReadFromJsonAsync<GetInfoResponse>();
+        return await response.Content.ReadFromJsonAsync<NativeGetInfoResponse>();
     }
 
-    public async Task<GetLinksResponse> GetLinks(string accessToken)
+    public async Task<NativeGetLinksResponse> GetLinks(string accessToken)
     {
         var response = await Get("api/links", accessToken);
         response.EnsureSuccessStatusCode();
-        return await response.Content.ReadFromJsonAsync<GetLinksResponse>();
+        return await response.Content.ReadFromJsonAsync<NativeGetLinksResponse>();
     }
 }
