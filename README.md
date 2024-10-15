@@ -69,6 +69,14 @@ docker compose up -d
 
 Any which way, API available at http://your-node:8080/swagger
 
+## Building manually
+
+If you want to build manually, the rough steps, untested, are:
+
+- install .NET 8.0 SDK as per https://dotnet.microsoft.com/en-us/download/dotnet/8.0
+- `git clone https://github.com/m0lte/bpqapi`
+- set an environment variable `bpq__api=http://localhost:8008`
+- `cd bpqapi/bpqapi; dotnet run`
 
 ## InfluxDB Metrics
 
