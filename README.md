@@ -16,13 +16,13 @@ There is a swagger at `/swagger/index.html`
 
 ## Running under Docker
 
-If you are running Docker on the same system as your node (recommended) then substitute the magic Docker IP `172.17.0.1` with the hostname of the system where your node is running.
-
 Current targets: linux/arm/v7, linux/arm64/v8, linux/amd64
+
+If you are not running Docker on the same system as your node then substitute the magic Docker hostname `host.docker.internal` with the hostname of the system where your node is running.
 
 ```
 docker pull m0lte/bpqapi
-docker run -e bpq__uri=http://172.17.0.1:8008 -p 8080:8080 m0lte/bpqapi
+docker run --add-host=host.docker.internal:host-gateway -e bpq__uri=http://host.docker.internal:8008 -p 8080:8080 m0lte/bpqapi
 ```
 
 change the port it is exposed at by changing the first part of the `-p` argument.
@@ -34,13 +34,15 @@ or, for something a bit more permanent:
 ```
 name: bpqapi
 services:
-    bpqapi:
-        image: m0lte/bpqapi
-        restart: unless-stopped
-        environment:
-            - bpq__uri=http://172.17.0.1:8008
-        ports:
-            - 8080:8080
+  bpqapi:
+    environment:
+      - bpq__uri=http://host.docker.internal:8008
+    image: m0lte/bpqapi
+    restart: unless-stopped
+    ports:
+      - 8080:8080
+    extra_hosts:
+      - host.docker.internal:host-gateway
 ```
 
 and to start: 
