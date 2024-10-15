@@ -16,11 +16,13 @@ There is a swagger at `/swagger/index.html`
 
 ## Running under Docker
 
-Current targets: linux/arm/v7, linux/amd64
+Current targets: linux/arm/v7, linux/arm64/v8, linux/amd64
+
+If you are not running Docker on the same system as your node then substitute the magic Docker hostname `host.docker.internal` with the hostname of the system where your node is running.
 
 ```
 docker pull m0lte/bpqapi
-docker run -e bpq__uri=http://your-node:8008 -p 8080:8080 m0lte/bpqapi
+docker run --add-host=host.docker.internal:host-gateway -e bpq__uri=http://host.docker.internal:8008 -p 8080:8080 m0lte/bpqapi
 ```
 
 change the port it is exposed at by changing the first part of the `-p` argument.
@@ -32,13 +34,15 @@ or, for something a bit more permanent:
 ```
 name: bpqapi
 services:
-    bpqapi:
-        image: m0lte/bpqapi
-        restart: unless-stopped
-        environment:
-            - bpq__uri=http://your-node:8008
-        ports:
-            - 8080:8080
+  bpqapi:
+    environment:
+      - bpq__uri=http://host.docker.internal:8008
+    image: m0lte/bpqapi
+    restart: unless-stopped
+    ports:
+      - 8080:8080
+    extra_hosts:
+      - host.docker.internal:host-gateway
 ```
 
 and to start: 
@@ -65,6 +69,14 @@ docker compose up -d
 
 Any which way, API available at http://your-node:8080/swagger
 
+## Building manually
+
+If you want to build manually, the rough steps, untested, are:
+
+- install .NET 8.0 SDK as per https://dotnet.microsoft.com/en-us/download/dotnet/8.0
+- `git clone https://github.com/m0lte/bpqapi`
+- set an environment variable `bpq__api=http://localhost:8008`
+- `cd bpqapi/bpqapi; dotnet run`
 
 ## InfluxDB Metrics
 
