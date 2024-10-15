@@ -1,1 +1,1 @@
-docker buildx build --pull --platform linux/arm,linux/amd64 --push -t m0lte/bpqapi:latest .
+docker buildx build --pull --platform linux/arm/v7,linux/amd64,linux/arm64/v8 --push -t m0lte/bpqapi:latest .
