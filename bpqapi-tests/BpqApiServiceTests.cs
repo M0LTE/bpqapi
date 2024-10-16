@@ -12,7 +12,7 @@ public class BpqApiServiceTests
 
     public BpqApiServiceTests()
     {
-        target = new BpqApiService(new HttpClient(), new Options());
+        target = new BpqApiService(new HttpClient(), new Options(new Uri("http://localhost")));
     }
 
     [Fact]
@@ -50,7 +50,7 @@ public class BpqApiServiceTests
     [Fact]
     public async Task TestSendMail()
     {
-        var bpqUiService = new BpqUiService(new Options(), new HttpClient(new HttpClientHandler { AutomaticDecompression = DecompressionMethods.Deflate | DecompressionMethods.GZip }));
+        var bpqUiService = new BpqUiService(new Options(new Uri("http://gb7rdg-node:8008")), new HttpClient(new HttpClientHandler { AutomaticDecompression = DecompressionMethods.Deflate | DecompressionMethods.GZip }));
         await bpqUiService.SendWebmail("m0lte", "xxx", new bpqapi.Models.SendMailEntity
         {
             To = "test",
@@ -62,7 +62,7 @@ public class BpqApiServiceTests
     }
 }
 
-internal class Options : IOptions<BpqApiOptions>
+internal class Options(Uri uri, int? telnetTcpPort = null, string? ctext = null) : IOptions<BpqApiOptions>
 {
-    public BpqApiOptions Value => new() { Uri = new Uri("http://gb7rdg-node:8008") };
+    public BpqApiOptions Value => new() { Uri = uri, TelnetTcpPort = telnetTcpPort, Ctext = ctext };
 }
