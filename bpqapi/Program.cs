@@ -2,6 +2,8 @@ using bpqapi;
 using bpqapi.Services;
 using Microsoft.OpenApi.Models;
 using System.Net;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -20,6 +22,7 @@ builder.Services.AddSwaggerGen(c =>
 builder.Services.Configure<BpqApiOptions>(builder.Configuration.GetSection("bpq"));
 builder.Services.AddSingleton<BpqUiService>();
 builder.Services.AddSingleton<BpqApiService>();
+builder.Services.AddTransient<BpqTelnetClient>();
 builder.Services.AddHttpClient<BpqUiService>(client =>
 {
     client.Timeout = TimeSpan.FromSeconds(5);
@@ -43,6 +46,16 @@ builder.Services.AddSwaggerGen(c =>
         Description = "Basic Authorization header using the Bearer scheme."
     });
     c.AddSecurityRequirement(new OpenApiSecurityRequirement { { new OpenApiSecurityScheme { Reference = new OpenApiReference { Type = ReferenceType.SecurityScheme, Id = "basic" } }, [] } });
+});
+
+builder.Services.ConfigureHttpJsonOptions(options =>
+{
+    options.SerializerOptions.Converters.Add(new JsonStringEnumConverter(JsonNamingPolicy.CamelCase));
+});
+
+builder.Services.Configure<Microsoft.AspNetCore.Mvc.JsonOptions>(options =>
+{
+    options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter(JsonNamingPolicy.CamelCase));
 });
 
 var app = builder.Build();

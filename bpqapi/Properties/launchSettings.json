@@ -5,7 +5,9 @@
       "launchBrowser": true,
       "launchUrl": "swagger",
       "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development"
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "bpq__telnetTcpPort": "8010",
+        "bpq__ctext": "Welcome to GB7RDG Telnet Server\\n Enter ? for list of commands\\n\\n"
       },
       "dotnetRunMessages": true,
       "applicationUrl": "http://localhost:5177"

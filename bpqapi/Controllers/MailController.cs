@@ -9,7 +9,7 @@ namespace bpqapi.Controllers;
 /// </summary>
 [ApiController]
 [Route("mail")]
-public class MailController(BpqUiService bpqUiService) : ControllerBase
+public class MailController(BpqUiService bpqUiService, BpqTelnetClient bpqTelnetClient) : ControllerBase
 {
     /// <summary>
     /// Retrieve mail item by id
@@ -43,7 +43,7 @@ public class MailController(BpqUiService bpqUiService) : ControllerBase
     /// <returns></returns>
     [HttpGet]
     [ProducesResponseType(typeof(MailListEntity[]), 200)]
-    public async Task<IActionResult> GetAllTypesList()
+    public async Task<IActionResult> GetAllTypesList(DataSource? dataSource = DataSource.Ui)
     {
         var header = HttpContext.ParseBasicAuthHeader();
 
@@ -52,13 +52,31 @@ public class MailController(BpqUiService bpqUiService) : ControllerBase
             return BadRequest("BBS callsign and password required as basic auth header");
         }
 
-        try
+        if (dataSource == DataSource.Telnet)
         {
-            return Ok(await bpqUiService.GetWebmailAllMailList(header.Value.User, header.Value.Password));
+            var loginResult = await bpqTelnetClient.Login(header.Value.User, header.Value.Password);
+            if (loginResult != TelnetLoginResult.Success)
+            {
+                return Unauthorized("BPQ rejected that telnet login");
+            }
+
+            var items = await bpqTelnetClient.MessageList();
+            return Ok(items);
         }
-        catch (LoginFailedException)
+        else if (dataSource == DataSource.Ui)
         {
-            return Unauthorized("BPQ rejected that BBS login");
+            try
+            {
+                return Ok(await bpqUiService.GetWebmailAllMailList(header.Value.User, header.Value.Password));
+            }
+            catch (LoginFailedException)
+            {
+                return Unauthorized("BPQ rejected that webmail login");
+            }
+        }
+        else
+        {
+            return BadRequest("Data source must be specified");
         }
     }
 
@@ -186,4 +204,9 @@ public class MailController(BpqUiService bpqUiService) : ControllerBase
             return Unauthorized("BPQ rejected that BBS login");
         }
     }
+}
+
+public enum DataSource
+{
+    Telnet, Ui
 }

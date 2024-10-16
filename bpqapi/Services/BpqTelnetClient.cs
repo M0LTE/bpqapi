@@ -1,16 +1,26 @@
-﻿using Microsoft.Extensions.Options;
+﻿using bpqapi.Models;
+using bpqapi.Parsers;
+using Microsoft.Extensions.Options;
 using System.Diagnostics;
 using System.Net.Sockets;
 using System.Text;
 
 namespace bpqapi.Services;
 
-public class BpqTelnetClient(IOptions<BpqApiOptions> options)
+public class BpqTelnetClient(IOptions<BpqApiOptions> options) : IDisposable
 {
     private readonly TcpClient client = new();
+    private NetworkStream? stream;
+    private StreamReader? reader;
+    private StreamWriter? writer;
 
     public async Task<TelnetLoginResult> Login(string user, string password)
     {
+        if (State != BpqSessionState.PreLogin)
+        {
+            throw new InvalidOperationException("Already logged in");
+        }
+
         if (!options.Value.TelnetTcpPort.HasValue)
         {
             throw new InvalidOperationException("TelnetTcpPort is not configured");
@@ -23,13 +33,14 @@ public class BpqTelnetClient(IOptions<BpqApiOptions> options)
 
         await client.ConnectAsync(options.Value.Uri.Host, options.Value.TelnetTcpPort.Value);
         client.ReceiveTimeout = 5000;
-        using NetworkStream stream = client.GetStream();
-        using StreamReader reader = new(stream);
-        using StreamWriter writer = new(stream);
+        stream = client.GetStream();
+        reader = new(stream);
+        writer = new(stream);
         writer.AutoFlush = true;
         writer.NewLine = "\r\n"; // seems even Linux BPQ expects CRLF
 
-        if (!reader.Expect("user:"))
+        var userPromptResult = reader.Expect("user:");
+        if (!userPromptResult.success)
         {
             throw new ProtocolErrorException("Expected 'user:' - is this a BPQ telnet port?");
         }
@@ -68,7 +79,94 @@ public class BpqTelnetClient(IOptions<BpqApiOptions> options)
         }
 
         return result;
+    }
+
+    public Task<List<MailListEntity>> MessageList()
+    {
+        if (State != BpqSessionState.LoggedIn)
+        {
+            throw new InvalidOperationException("Not logged in");
+        }
+
+        writer!.WriteLine("bbs");
+
+        // ...Last listed is 4029{0d}{0a}de GB7RDG>{0d}{0a}
+
+        var (success, matchingValue) = reader!.Expect(s => s.Contains("\r\nde ") && s.EndsWith(">\r\n"));
+        if (!success)
+        {
+            throw new ProtocolErrorException("Didn't get BBS when expected");
+        }
+
+        bbsPrompt = matchingValue.Split("\r\n", StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries).Last();
+
+        // turn off paging
+        writer!.WriteLine("op 0"); 
+        reader!.Expect($"Page Length is 0\r\n{bbsPrompt}");
+
+        writer!.WriteLine("la");
+        var (ok, response) = reader!.Expect(bbsPrompt);
         
+        if (!ok)
+        {
+            throw new ProtocolErrorException("Didn't get LA response");
+        }
+
+        var lines = response.Split("\r\n", StringSplitOptions.RemoveEmptyEntries).SkipLast(1);
+
+        var messages = lines.Select(ParseMailListLine).ToList();
+
+        return Task.FromResult(messages);
+    }
+
+    public static MailListEntity ParseMailListLine(string line)
+    {
+        var id = line[0..6];
+        var day = line[7..9];
+        var mon = line[10..13];
+        var type = line[14];
+        var state = line[15];
+        var len = line[17..24];
+        var from = line[25..31];
+        var at = line[32..39];
+        var to = line[40..46];
+        var subject = line[47..];
+        var entity = new MailListEntity
+        {
+            Id = int.Parse(id),
+            Date = new MonthAndDay(months[mon], int.Parse(day)),
+            Type = type,
+            State = state,
+            Length = int.Parse(len),
+            From = from.Trim(),
+            At = at.StartsWith('@') ? at[1..].Trim() : string.Empty,
+            To = to.Trim(),
+            Subject = subject.Trim()
+        };
+        return entity;
+    }
+
+    private static readonly Dictionary<string, int> months = new()
+    {
+        ["Jan"] = 1,
+        ["Feb"] = 2,
+        ["Mar"] = 3,
+        ["Apr"] = 4,
+        ["May"] = 5,
+        ["Jun"] = 6,
+        ["Jul"] = 7,
+        ["Aug"] = 8,
+        ["Sep"] = 9,
+        ["Oct"] = 10,
+        ["Nov"] = 11,
+        ["Dec"] = 12
+    };
+
+    private string? bbsPrompt;
+
+    public void Dispose()
+    {
+        ((IDisposable)client).Dispose();
     }
 
     public BpqSessionState State { get; private set; } = BpqSessionState.PreLogin;
@@ -81,6 +179,12 @@ public class BpqTelnetClient(IOptions<BpqApiOptions> options)
 
 public class ProtocolErrorException(string? message) : Exception(message)
 {
+    public ProtocolErrorException(string? message, string bufferContents) : this(message)
+    {
+        BufferContents = bufferContents;
+    }
+
+    public string? BufferContents { get; }
 }
 
 public enum TelnetLoginResult
@@ -95,10 +199,35 @@ internal static class ExtensionMethods
     /// </summary>
     /// <param name="reader"></param>
     /// <param name="match"></param>
-    /// <returns></returns>
-    public static bool Expect(this StreamReader reader, string match)
+    /// <returns>The matching text if it was found, else null</returns>
+    public static (bool success, string matchingValue) Expect(this StreamReader reader, string match)
     {
-        return ReadUntil(reader, new Dictionary<string, bool> { { match, true } });
+        return Expect(reader, s => s.EndsWith(match));
+    }
+
+    public static (bool success, string matchingValue) Expect(this StreamReader reader, Func<string, bool> predicate)
+    {
+        var buffer = new List<byte>();
+
+        while (true)
+        {
+            try
+            {
+                buffer.Add((byte)reader.Read());
+            }
+            catch (IOException)
+            {
+                throw new ProtocolErrorException("Failed to match predicate. Buffer contents: " + buffer.AsString().Printable(), buffer.AsString().Printable());
+            }
+
+            //Debug.WriteLine(buffer.AsString());
+
+            var s = Encoding.UTF8.GetString(buffer.ToArray());
+            if (predicate(s))
+            {
+                return (true, s);
+            }
+        }
     }
 
     /// <summary>
@@ -166,7 +295,7 @@ internal static class ExtensionMethods
         return true;
     }
 
-    private static string Printable(string value)
+    public static string Printable(this string value)
     {
         var sb = new StringBuilder();
 

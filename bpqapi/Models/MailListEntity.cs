@@ -6,11 +6,11 @@ public readonly record struct MailListEntity
     public MonthAndDay Date { get; init; }
     public char Type { get; init; }
     public char State { get; init; }
+    public int Length { get; init; }
     public string To { get; init; }
     public string At { get; init; }
     public string From { get; init; }
     public string Subject { get; init; }
-    public int Length { get; init; }
 }
 
 public readonly record struct MonthAndDay(int Month, int Day);
