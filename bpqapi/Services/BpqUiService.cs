@@ -1,4 +1,5 @@
 ﻿using bpqapi.Models;
+using bpqapi.Models.BpqApi;
 using bpqapi.Parsers;
 using Microsoft.Extensions.Options;
 using System.Net.Http.Headers;
@@ -25,13 +26,18 @@ public class BpqUiService(IOptions<BpqApiOptions> options, HttpClient httpClient
         var partnerDetails = new List<ForwardingStation>();
         foreach (var partner in partners)
         {
-            var partnerResponse = await httpClient.PostAsync(new Uri(options.Uri, $"Mail/FwdDetails?{token}"), new ByteArrayContent(Encoding.UTF8.GetBytes(partner)));
-            partnerResponse.EnsureSuccessStatusCode();
-            var partnerDetail = MailForwardingPageParser.ParseStationResponse(await partnerResponse.Content.ReadAsStringAsync()).EnsureSuccess();
-            partnerDetails.Add(partnerDetail);
+            partnerDetails.Add(await GetForwardingStationDetails(token, partner));
         }
 
         return [.. partnerDetails];
+    }
+
+    private async Task<ForwardingStation> GetForwardingStationDetails(string token, string partner)
+    {
+        var partnerResponse = await httpClient.PostAsync(new Uri(options.Uri, $"Mail/FwdDetails?{token}"), new ByteArrayContent(Encoding.UTF8.GetBytes(partner)));
+        partnerResponse.EnsureSuccessStatusCode();
+        var partnerDetail = MailForwardingPageParser.ParseStationResponse(await partnerResponse.Content.ReadAsStringAsync()).EnsureSuccess();
+        return partnerDetail;
     }
 
     public async Task<ForwardingOptions> GetForwardingOptions(string sysopUser, string password)
@@ -225,6 +231,35 @@ public class BpqUiService(IOptions<BpqApiOptions> options, HttpClient httpClient
             Name = $"\"{name}\"", // quotes are necessary else we crash BPQ
         };
         return sc;
+    }
+
+    public async Task<bool> StartForwardingSession(string user, string password, string callsign)
+    {
+        var token = await MailManagementAuth(user, password);
+
+        // bpq seems to track the last forwarding partner page that was looked at, in order to 
+        // know who to start a session with, rather than passing it in the request.
+        await GetForwardingStationDetails(token, callsign.ToUpper());
+
+        // POST http://gb7rdg-node:8008/Mail/FWDSave?M0000001360E7
+
+        var postResponse = await httpClient.PostAsync(new Uri(options.Uri, "Mail/FWDSave?" + token), new StringContent("StartForward"));
+        return postResponse.IsSuccessStatusCode;
+        /*
+POST /Mail/FWDSave?M0000001360E7 HTTP/1.1
+Host: gb7rdg-node:8008
+Connection: keep-alive
+Content-Length: 12
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36
+Content-Type: text/plain;charset=UTF-8
+Accept: x
+Origin: http://gb7rdg-node:8008
+Referer: http://gb7rdg-node:8008/Mail/FWD?M0000001360E7
+Accept-Encoding: gzip, deflate
+Accept-Language: en-US,en;q=0.9
+
+StartForward
+         */
     }
 }
 

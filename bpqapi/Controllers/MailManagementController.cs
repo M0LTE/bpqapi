@@ -55,4 +55,33 @@ public class MailManagementController(BpqUiService bpqUiService) : ControllerBas
             return Unauthorized(LoginError);
         }
     }
+
+    [HttpPost("partners/{callsign}/start-session")]
+    [ProducesResponseType(200)]
+    public async Task<IActionResult> StartForwardingSession(string callsign)
+    {
+        var header = HttpContext.ParseBasicAuthHeader();
+
+        if (header == null)
+        {
+            return BadRequest(AuthError);
+        }
+
+        try
+        {
+            var result = await bpqUiService.StartForwardingSession(header.Value.User, header.Value.Password, callsign);
+            if (result)
+            {
+                return Ok();
+            }
+            else
+            {
+                return StatusCode(500, "Failed to start forwarding session");
+            }
+        }
+        catch (LoginFailedException)
+        {
+            return Unauthorized(LoginError);
+        }
+    }
 }
