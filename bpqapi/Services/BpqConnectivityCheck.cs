@@ -2,13 +2,13 @@
 
 namespace bpqapi.Services;
 
-public class BpqConnectivityCheck(BpqApiService bpqApiService, ILogger<BpqConnectivityCheck> logger, IOptions<BpqApiOptions> options) : IHostedService
+public class BpqConnectivityCheck(BpqNativeApiService bpqApiService, ILogger<BpqConnectivityCheck> logger, IOptions<BpqApiOptions> options) : IHostedService
 {
     public async Task StartAsync(CancellationToken cancellationToken)
     {
         try
         {
-            await bpqApiService.GetToken();
+            await bpqApiService.RequestLegacyToken();
         }
         catch (Exception ex)
         {

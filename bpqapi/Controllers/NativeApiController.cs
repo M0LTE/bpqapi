@@ -9,9 +9,9 @@ namespace bpqapi.Controllers;
 /// </summary>
 /// <param name="bpqApiService"></param>
 [Route("native")]
-public class NativeApiController(BpqApiService bpqApiService) : ControllerBase
+public class NativeApiController(BpqNativeApiService bpqApiService) : ControllerBase
 {
-    private async Task<string> GetToken() => (await bpqApiService.GetToken()).AccessToken;
+    private async Task<string> GetToken() => (await bpqApiService.RequestLegacyToken()).AccessToken;
 
     [HttpGet("ports")]
     [ProducesResponseType(200, Type = typeof(NativeGetPortsResponse))]

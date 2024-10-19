@@ -8,17 +8,17 @@ namespace bpqapi_tests;
 
 public class BpqApiServiceTests
 {
-    private BpqApiService target;
+    private BpqNativeApiService target;
 
     public BpqApiServiceTests()
     {
-        target = new BpqApiService(new HttpClient(), new Options(new Uri("http://localhost")));
+        target = new BpqNativeApiService(new HttpClient(), new Options(new Uri("http://localhost")));
     }
 
     [Fact]
     public async Task TestLogin()
     {
-        var token = await target.GetToken();
+        var token = await target.RequestLegacyToken();
         token.AccessToken.Should().NotBeNullOrWhiteSpace();
         token.ExpiresIn.Should().BeGreaterThan(0);
         token.Scope.Should().NotBeNullOrWhiteSpace();
@@ -27,7 +27,7 @@ public class BpqApiServiceTests
     [Fact]
     public async Task TestMheard()
     {
-        var token = await target.GetToken();
+        var token = await target.RequestLegacyToken();
 
         var mheard = await target.GetMheard(token.AccessToken, 2);
 
@@ -37,7 +37,7 @@ public class BpqApiServiceTests
     [Fact]
     public async Task TestGetPorts()
     {
-        var token = await target.GetToken();
+        var token = await target.RequestLegacyToken();
         var response = await target.GetPorts(token.AccessToken);
         response.Ports.Should().HaveCountGreaterThan(0);
 

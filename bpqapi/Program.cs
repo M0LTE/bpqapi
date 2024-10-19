@@ -21,14 +21,14 @@ builder.Services.AddSwaggerGen(c =>
 });
 builder.Services.Configure<BpqApiOptions>(builder.Configuration.GetSection("bpq"));
 builder.Services.AddSingleton<BpqUiService>();
-builder.Services.AddSingleton<BpqApiService>();
+builder.Services.AddSingleton<BpqNativeApiService>();
 builder.Services.AddTransient<BpqTelnetClient>();
 builder.Services.AddHttpClient<BpqUiService>(client =>
 {
     client.Timeout = TimeSpan.FromSeconds(5);
 }).ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler { AutomaticDecompression = DecompressionMethods.Deflate | DecompressionMethods.GZip });
 
-builder.Services.AddHttpClient<BpqApiService>(client =>
+builder.Services.AddHttpClient<BpqNativeApiService>(client =>
 {
     client.Timeout = TimeSpan.FromSeconds(5);
 }).ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler { AutomaticDecompression = DecompressionMethods.Deflate | DecompressionMethods.GZip });

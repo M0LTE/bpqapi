@@ -5,9 +5,9 @@ using System.Globalization;
 namespace bpqapi.Controllers;
 
 [Route("node")]
-public class NodeController(BpqApiService bpqApiService) : ControllerBase
+public class NodeController(BpqNativeApiService bpqApiService) : ControllerBase
 {
-    private async Task<string> GetToken() => (await bpqApiService.GetToken()).AccessToken;
+    private async Task<string> GetToken() => (await bpqApiService.RequestLegacyToken()).AccessToken;
 
     [HttpGet("info")]
     [ProducesResponseType(200, Type = typeof(GetInfoResponse))]
