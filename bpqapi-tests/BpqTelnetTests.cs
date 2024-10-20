@@ -1,4 +1,5 @@
-﻿using bpqapi.Services;
+﻿using bpqapi.Models;
+using bpqapi.Services;
 using FluentAssertions;
 
 namespace bpqapi_tests;
@@ -18,6 +19,14 @@ public class BpqTelnetTests
 
     [Fact]
     public async Task TestOkPassword() => (await target.Login("tf", password)).Should().Be(TelnetLoginResult.Success); // will fail because the password is local to me
+
+    [Fact]
+    public async Task TestKissCommand()
+    {
+        var result = await target.Login("tf", password);
+        result.Should().Be(TelnetLoginResult.Success);
+        (await target.SendKissCommand(portNum: 3, kissCommandNum: 6, value: NinoMode.Bpsk300Il2pc.Id)).Should().BeTrue();
+    }
 
     [Fact]
     public async Task TestBbs()

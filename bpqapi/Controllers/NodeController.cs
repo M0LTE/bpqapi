@@ -5,7 +5,7 @@ using System.Globalization;
 namespace bpqapi.Controllers;
 
 [Route("node")]
-public class NodeController(BpqNativeApiService bpqApiService) : ControllerBase
+public class NodeController(BpqNativeApiService bpqApiService, BpqTelnetClient bpqTelnetClient) : ControllerBase
 {
     private async Task<string> GetToken() => (await bpqApiService.RequestLegacyToken()).AccessToken;
 
@@ -58,6 +58,27 @@ public class NodeController(BpqNativeApiService bpqApiService) : ControllerBase
             LastHeard = DateTime.ParseExact(item.LastHeard, "yyyy-M-d HH:mm:ss", CultureInfo.InvariantCulture, DateTimeStyles.AdjustToUniversal),
             Packets = item.Packets
         }));
+    }
+
+    [HttpPost("port/{portNum}/ninomode/{ninoMode}")]
+    public async Task<IActionResult> SetNinoMode(int portNum, int ninoMode)
+    {
+        var header = HttpContext.ParseBasicAuthHeader();
+
+        if (header == null)
+        {
+            return BadRequest(Resources.AuthError);
+        }
+
+        var loginResult = await bpqTelnetClient.Login(header.Value.User, header.Value.Password);
+        if (loginResult != TelnetLoginResult.Success)
+        {
+            return Unauthorized(Resources.LoginError);
+        }
+
+        bool result = await bpqTelnetClient.SendKissCommand(portNum, 6, ninoMode);
+
+        return result ? Ok() : StatusCode(500, "Failed to send KISS command");
     }
 }
 

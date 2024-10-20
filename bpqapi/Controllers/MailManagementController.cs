@@ -8,9 +8,6 @@ namespace bpqapi.Controllers;
 [Route("mail")]
 public class MailManagementController(BpqUiService bpqUiService) : ControllerBase
 {
-    private const string AuthError = "Sysop username and password required as basic auth header";
-    private const string LoginError = "BPQ rejected that sysop login";
-
     [HttpGet("options/bpq")]
     [ProducesResponseType(typeof(ForwardingOptions), 200)]
     public async Task<IActionResult> GetOptions()
@@ -19,7 +16,7 @@ public class MailManagementController(BpqUiService bpqUiService) : ControllerBas
 
         if (header == null)
         {
-            return BadRequest(AuthError);
+            return BadRequest(Resources.AuthError);
         }
 
         try
@@ -28,7 +25,7 @@ public class MailManagementController(BpqUiService bpqUiService) : ControllerBas
         }
         catch (LoginFailedException)
         {
-            return Unauthorized(LoginError);
+            return Unauthorized(Resources.LoginError);
         }
     }
 
@@ -40,7 +37,7 @@ public class MailManagementController(BpqUiService bpqUiService) : ControllerBas
 
         if (header == null)
         {
-            return BadRequest(AuthError);
+            return BadRequest(Resources.AuthError);
         }
 
         try
@@ -52,7 +49,7 @@ public class MailManagementController(BpqUiService bpqUiService) : ControllerBas
         }
         catch (LoginFailedException)
         {
-            return Unauthorized(LoginError);
+            return Unauthorized(Resources.LoginError);
         }
     }
 
@@ -64,7 +61,7 @@ public class MailManagementController(BpqUiService bpqUiService) : ControllerBas
 
         if (header == null)
         {
-            return BadRequest(AuthError);
+            return BadRequest(Resources.AuthError);
         }
 
         try
@@ -81,7 +78,7 @@ public class MailManagementController(BpqUiService bpqUiService) : ControllerBas
         }
         catch (LoginFailedException)
         {
-            return Unauthorized(LoginError);
+            return Unauthorized(Resources.LoginError);
         }
     }
 }

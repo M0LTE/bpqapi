@@ -81,11 +81,31 @@ public class BpqTelnetClient(IOptions<BpqApiOptions> options) : IDisposable
         return result;
     }
 
+    public async Task<bool> SendKissCommand(int portNum, int kissCommandNum, int value)
+    {
+        if (State != BpqSessionState.LoggedIn)
+        {
+            throw new InvalidOperationException("Not at logged in state");
+        }
+
+        await writer!.WriteLineAsync("password");
+        var (elevateOk, _) = reader!.Expect("} Ok\r\n");
+        if (!elevateOk)
+        {
+            throw new ProtocolErrorException("Failed to elevate to privileged mode");
+        }
+
+        await writer!.WriteLineAsync($"kiss {portNum} {kissCommandNum} {value}");
+        var (ok, _) = reader!.Expect("} Command Sent\r\n");
+        
+        return ok;
+    }
+
     public Task<List<MailListEntity>> MessageList()
     {
         if (State != BpqSessionState.LoggedIn)
         {
-            throw new InvalidOperationException("Not logged in");
+            throw new InvalidOperationException("Not at logged in state");
         }
 
         writer!.WriteLine("bbs");
@@ -97,6 +117,8 @@ public class BpqTelnetClient(IOptions<BpqApiOptions> options) : IDisposable
         {
             throw new ProtocolErrorException("Didn't get BBS when expected");
         }
+
+        State = BpqSessionState.Bbs;
 
         bbsPrompt = matchingValue.Split("\r\n", StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries).Last();
 
@@ -173,7 +195,8 @@ public class BpqTelnetClient(IOptions<BpqApiOptions> options) : IDisposable
 
     public enum BpqSessionState
     {
-        PreLogin, LoggedIn
+        PreLogin, LoggedIn,
+        Bbs
     }
 }
 
