@@ -1,4 +1,5 @@
-﻿using bpqapi.Services;
+﻿using bpqapi.Models;
+using bpqapi.Services;
 using Microsoft.AspNetCore.Mvc;
 using System.Globalization;
 
@@ -44,7 +45,7 @@ public class NodeController(BpqNativeApiService bpqApiService, BpqTelnetClient b
             }));
         }
 
-        return Ok(results.OrderByDescending(m=>m.LastHeard));
+        return Ok(results.OrderByDescending(m => m.LastHeard));
     }
 
     [HttpGet("mheard/{portNumber}")]
@@ -60,8 +61,13 @@ public class NodeController(BpqNativeApiService bpqApiService, BpqTelnetClient b
         }));
     }
 
-    [HttpPost("port/{portNum}/ninomode/{ninoMode}")]
-    public async Task<IActionResult> SetNinoMode(int portNum, int ninoMode)
+    [HttpPost("port/{portNum}/ninomode")]
+    [ProducesResponseType<object>(200, "application/json")]
+    public async Task<IActionResult> SetNinoMode(int portNum,
+        [FromQuery] int? id,
+        [FromQuery] NinoModeEnum? name,
+        [FromQuery] NinoModeUsage? usage,
+        [FromQuery] bool persist = false)
     {
         var header = HttpContext.ParseBasicAuthHeader();
 
@@ -70,16 +76,77 @@ public class NodeController(BpqNativeApiService bpqApiService, BpqTelnetClient b
             return BadRequest(Resources.AuthError);
         }
 
+        var count = (id == null ? 0 : 1)
+            + (name == null ? 0 : 1)
+            + (usage == null ? 0 : 1);
+
+        if (count == 0)
+        {
+            return BadRequest($"{nameof(id)}, {nameof(name)}, or {nameof(usage)} must be specified");
+        }
+        else if (count > 1)
+        {
+            return BadRequest($"Only one of {nameof(id)}, {nameof(name)}, or {nameof(usage)} must be specified");
+        }
+
         var loginResult = await bpqTelnetClient.Login(header.Value.User, header.Value.Password);
         if (loginResult != TelnetLoginResult.Success)
         {
             return Unauthorized(Resources.LoginError);
         }
 
-        bool result = await bpqTelnetClient.SendKissCommand(portNum, 6, ninoMode);
+        int value = 0;
 
-        return result ? Ok() : StatusCode(500, "Failed to send KISS command");
+        if (id != null)
+        {
+            value = id.Value;
+        }
+        else if (name != null)
+        {
+            value = (int)name!.Value;
+        }
+        else if (usage != null)
+        {
+            value = (int)usage!.Value;
+        }
+
+        if (!persist)
+        {
+            value += 16;
+        }
+
+        bool result = await bpqTelnetClient.SendKissCommand(portNum, 6, value);
+
+        return result ? Ok(new { sentValue = value }) : StatusCode(500, "Failed to send KISS command");
     }
+}
+
+public enum NinoModeEnum
+{
+    Gfsk9600 = 0,
+    C4Fsk19200Il2pc = 1,
+    Gfsk9600Il2pc = 2,
+    C4Fsk9600Il2pc = 3,
+    Gfsk4800Il2pc = 4,
+    Qpsk3600Il2pc = 5,
+    Afsk1200 = 6,
+    Afsk1200Il2p = 7,
+    Bpsk300Il2pc = 8,
+    Qpsk600Il2pc = 9,
+    Bpsk1200Il2pc = 10,
+    Qpsk2400Il2pc = 11,
+    Afsk300 = 12,
+    Afsk300Il2p = 13,
+    Afsk300Il2pc = 14,
+}
+
+public enum NinoModeUsage
+{
+    Nvis40mUkSlot1 = 14,
+    Nvis40mUkSlot3 = 8,
+    ClassicHf = 12,
+    Aprs = 6,
+    G3ruh9k6 = 0,
 }
 
 public readonly record struct GetInfoResponse
