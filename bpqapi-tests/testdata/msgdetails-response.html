@@ -1,0 +1,86 @@
+﻿<html>
+    <head>
+        <meta content="text/html; charset=ISO-8859-1" http-equiv="content-type">
+        <title>MsgEdit</title>
+    </head>
+    <body>
+        <h4>Message 7008</h4>
+        <form style="font-family: monospace;" method=post action=/Mail/Msg?M0000015743C4 name=Msgs>
+            From &nbsp;<input style="font-family: monospace;" size=10 name=From value=M0LTE>
+            Sent &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<input readonly=readonly size=12 name=Sent value="19-Oct 15:57Z">
+            &nbsp;Type &nbsp;&nbsp;&nbsp;&nbsp;
+            <select tabindex=1 size=1 name=Type>
+                <option value=B>B</option>
+                <option selected value=P>P</option>
+                <option value=T>T</option>
+            </select>
+            <br>
+            To &nbsp;&nbsp;<input style="font-family: monospace;" size=10 name=To value=M0LTE>
+            Received &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<input readonly=readonly size=12 name=RX value="19-Oct 15:58Z">
+            &nbsp;Status &nbsp;&nbsp;
+            <select tabindex=1 size=1 name=Status>
+                <option value=N>N</option>
+                <option value=Y>Y</option>
+                <option selected value=F>F</option>
+                <option value=K>K</option>
+                <option value=H>H</option>
+                <option value=D>D</option>
+                <option value=$>$</option>
+            </select>
+            <br>
+            BID &nbsp;&nbsp;<input style="width:100px; font-family: monospace; " name=BID value="7008_GB7RDG">
+            Last Changed <input readonly=readonly size=12 name=LastChange value="19-Oct 16:13Z">
+            &nbsp;Size &nbsp;<input readonly=readonly size=5 name=Size value=23>
+            <br>
+            <br>
+            Email From <input style="width:320px;" name=EFROM value=@GB7RDG.#42.GBR.EURO>
+            <br>
+            &nbsp;VIA &nbsp;<input style="width:360px;" name=VIA value=M0LTE.#42.GBR.EURO>
+            <br>
+            Title &nbsp;<input style="width:360px;" name=Title value="Test">
+            <br>
+            <br>
+            <span align=center>
+                <input onclick=editmsg("EditM?M0000015743C4?7008" ) value="Edit Text" type=button class='btn'>
+                <input onclick=save(this.form) value=Save type=button class='btn'>
+                <td>
+                    <a href=/Mail/SaveMessage?M0000015743C4>
+                        <button type=button class='btn'>Save Message</button>
+                    </a>
+                </td>
+                <td>
+                    <a href=/Mail/SaveAttachment?M0000015743C4>
+                        <button type=button class='btn' disabled>Save Attachment</button>
+                    </a>
+                </td>
+                <input onclick=doit("Print" ) value=Print type=button class='btn'>
+                <input onclick=doit("Export" ) value=Export type=button class='btn'>
+            </span>
+            <br>
+            <br>
+            Green = Sent, Yellow = Queued
+            <table style="text-align: left; width: 490px; font-family: monospace; align=center " border=1 cellpadding=2 cellspacing=2>
+                <tr>
+                    <td style="background-color: #FFFFFF;" onclick=ck("9" )>GB7BEX</td>
+                    <td style="background-color: #FFFFFF;" onclick=ck("11" )>GB7BPQ</td>
+                    <td style="background-color: #FFFFFF;" onclick=ck("7" )>GB7BRK</td>
+                    <td style="background-color: #FFFFFF;" onclick=ck("1" )>GB7BSK</td>
+                    <td style="background-color: #FFFFFF;" onclick=ck("5" )>GB7CIP</td>
+                    <td style="background-color: #FFFFFF;" onclick=ck("13" )>GB7HIB</td>
+                    <td style="background-color: #FFFFFF;" onclick=ck("3" )>GB7IOW</td>
+                    <td style="background-color: #98FFA0;" onclick=ck("12" )>GB7LAN</td>
+                </tr>
+                <tr>
+                    <td style="background-color: #FFFFFF;" onclick=ck("14" )>GB7LOX</td>
+                    <td style="background-color: #FFFFFF;" onclick=ck("4" )>GB7OXF</td>
+                    <td style="background-color: #FFFFFF;" onclick=ck("2" )>GB7RDG</td>
+                    <td style="background-color: #98FFA0;" onclick=ck("15" )>M0LTE</td>
+                    <td style="background-color: #FFFFFF;" onclick=ck("6" )>M5MPC</td>
+                    <td>&nbsp;</td>
+                    <td>&nbsp;</td>
+                    <td>&nbsp;</td>
+                </tr>
+            </table>
+        </form>
+    </body>
+</html>

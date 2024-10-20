@@ -15,6 +15,7 @@
     <None Remove="testdata\mailmgmtsignonresponse.html" />
     <None Remove="testdata\mailsample-01.html" />
     <None Remove="testdata\mailsample-02.html" />
+    <None Remove="testdata\msgdetails-response.html" />
     <None Remove="testdata\response_1728752234250.json" />
     <None Remove="testdata\webmaillistingpage-01.html" />
     <None Remove="testdata\webmaillistingpage-02.html" />
@@ -28,6 +29,9 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="testdata\response_1728752234250.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="testdata\msgdetails-response.html">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="testdata\webmaillistingpage-02.html">

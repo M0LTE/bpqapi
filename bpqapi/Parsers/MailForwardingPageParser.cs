@@ -96,12 +96,15 @@ internal static class Extensions
     public static string Value(this HtmlNode node) => node.Attributes["value"].Value;
 
     public static int AsInt(this string str) => int.Parse(str);
-    public static string[] LinesToArray(this string str) 
+    public static string[] LinesToArray(this string str)
         => str.Split("\n", StringSplitOptions.RemoveEmptyEntries).Select(s => s.Trim()).ToArray();
 
-    public static HtmlNode WithName(this HtmlNodeCollection nodes, string attributeValue) 
+    public static HtmlNode WithName(this HtmlNodeCollection nodes, string attributeValue)
         => nodes.WithAttribute("name", attributeValue);
 
-    public static HtmlNode WithAttribute(this HtmlNodeCollection nodes, string attributeName, string attributeValue) 
+    public static HtmlNode WithAttribute(this HtmlNodeCollection nodes, string attributeName, string attributeValue)
         => nodes.Single(n => n.Attributes.Any(att => string.Equals(att.Name, attributeName, StringComparison.OrdinalIgnoreCase) && att.Value == attributeValue));
+
+    public static IEnumerable<HtmlNode> WithAttribute(this HtmlNodeCollection nodes, string attributeName, Func<string, bool> predicate)
+        => nodes.Where(n => n.Attributes.Any(att => string.Equals(att.Name, attributeName, StringComparison.OrdinalIgnoreCase) && predicate(att.Value)));
 }

@@ -53,6 +53,33 @@ public class MailManagementController(BpqUiService bpqUiService) : ControllerBas
         }
     }
 
+    /// <summary>
+    /// Get a dictionary of all mail forwarding partner stations with outstanding messages in their queues, with the 
+    /// message IDs of the messages in each queue. Warning- this is slow due to underlying calls.
+    /// </summary>
+    /// <returns></returns>
+    [HttpGet("outbound-queues")]
+    [ProducesResponseType(typeof(Dictionary<string, List<int>>), 200)]
+    public async Task<IActionResult> GetOutboundMailQueues()
+    {
+        var header = HttpContext.ParseBasicAuthHeader();
+
+        if (header == null)
+        {
+            return BadRequest(Resources.AuthError);
+        }
+
+        try
+        {
+            var result = await bpqUiService.GetQueues(header.Value.User, header.Value.Password);
+            return Ok(result);
+        }
+        catch (LoginFailedException)
+        {
+            return Unauthorized(Resources.LoginError);
+        }
+    }
+
     [HttpPost("partners/{callsign}/start-session")]
     [ProducesResponseType(200)]
     public async Task<IActionResult> StartForwardingSession(string callsign)

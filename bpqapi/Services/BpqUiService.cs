@@ -1,5 +1,4 @@
 ﻿using bpqapi.Models;
-using bpqapi.Models.BpqApi;
 using bpqapi.Parsers;
 using Microsoft.Extensions.Options;
 using System.Net.Http.Headers;
@@ -14,7 +13,11 @@ public class BpqUiService(IOptions<BpqApiOptions> options, HttpClient httpClient
     public async Task<ForwardingStation[]> GetMailForwardingPartners(string sysopUser, string password)
     {
         var token = await MailManagementAuth(sysopUser, password);
+        return await GetMailForwardingPartners(token);
+    }
 
+    public async Task<ForwardingStation[]> GetMailForwardingPartners(string token)
+    { 
         // post http://gb7rdg-node:8008/Mail/FwdList.txt?M0000FB748BFF
 
         var listResponse = await httpClient.PostAsync(new Uri(options.Uri, $"Mail/FwdList.txt?{token}"), new FormUrlEncodedContent([]));
@@ -26,10 +29,42 @@ public class BpqUiService(IOptions<BpqApiOptions> options, HttpClient httpClient
         var partnerDetails = new List<ForwardingStation>();
         foreach (var partner in partners)
         {
-            partnerDetails.Add(await GetForwardingStationDetails(token, partner));
+            var detail = await GetForwardingStationDetails(token, partner);
+            partnerDetails.Add(detail);
         }
 
         return [.. partnerDetails];
+    }
+
+    public async Task<Dictionary<string, List<int>>> GetQueues(string sysopUser, string sysopPassword)
+    {
+        var token = await MailManagementAuth(sysopUser, sysopPassword);
+
+        var msg = await httpClient.PostAsync(new Uri(options.Uri, "Mail/MsgInfo.txt?" + token), new FormUrlEncodedContent([]));
+        msg.EnsureSuccessStatusCode();
+        var messageDetails = (await msg.Content.ReadAsStringAsync()).Split("|", StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            .Where(w => int.TryParse(w, out _))
+            .Select(int.Parse)
+            .Select(async messageId => await GetMessageDetails(token, messageId));
+        
+        Dictionary<string, List<int>> queues = [];
+
+        foreach (var detailsTask in messageDetails)
+        {
+            var messageDetail = await detailsTask;
+
+            foreach (var station in messageDetail.ForwardingStatus.Where(t => t.Value == MessageDetails.QueueStatus.Pending))
+            {
+                if (!queues.ContainsKey(station.Key))
+                {
+                    queues.Add(station.Key, []);
+                }
+
+                queues[station.Key].Add(messageDetail.Id);
+            }
+        }
+
+        return queues;
     }
 
     private async Task<ForwardingStation> GetForwardingStationDetails(string token, string partner)
@@ -260,6 +295,18 @@ Accept-Language: en-US,en;q=0.9
 
 StartForward
          */
+    }
+
+    public async Task<MessageDetails> GetMessageDetails(string mailManagementToken, int messageId)
+    {
+        // http://gb7rdg-node:8008/Mail/MsgDetails?M0000015743C4
+
+        var pageResponse = await httpClient.PostAsync(new Uri(options.Uri, $"Mail/MsgDetails?{mailManagementToken}"), new StringContent(messageId.ToString()));
+        pageResponse.EnsureSuccessStatusCode();
+
+        var details = MsgDetailsResponseParser.Parse(messageId, await pageResponse.Content.ReadAsStringAsync()).EnsureSuccess();
+
+        return details;
     }
 }
 
