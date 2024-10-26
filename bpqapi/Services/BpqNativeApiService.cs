@@ -108,9 +108,26 @@ public class BpqNativeApiService(HttpClient httpClient, IOptions<BpqApiOptions> 
 
     public async Task<NativeV1MailLoginResponse> RequestMailToken(string user, string password)
     {
-        var response = await httpClient.GetFromJsonAsync<NativeV1MailLoginResponse>(
-            new Uri(options.Value.Uri, $"api/v1/mail/login?{user}&{password}"));
-        return response;
+        var response = await httpClient.GetAsync(new Uri(options.Value.Uri, $"api/v1/mail/login?{user}&{password}"));
+
+        var content = await response.Content.ReadAsStringAsync();
+        response.EnsureSuccessStatusCode();
+        try
+        {
+            return JsonSerializer.Deserialize<NativeV1MailLoginResponse>(content)!;
+        }
+        catch(Exception ex)
+        {
+            if (Debugger.IsAttached)
+            {
+                Debugger.Break();
+            }
+            throw;
+        }
+
+        //var response = await httpClient.GetFromJsonAsync<NativeV1MailLoginResponse>(
+            //new Uri(options.Value.Uri, $"api/v1/mail/login?{user}&{password}"));
+        //return response;
     }
 
     public async Task<NativeV1MailMessagesResponse> GetMessagesV1(string mailAccessToken)
@@ -217,7 +234,7 @@ public readonly record struct NativeV1MailLoginResponse
     [JsonPropertyName("access_token")]
     public string AccessToken { get; init; }
 
-    [JsonPropertyName("expires_in")]// working around a bug in the API
+    [JsonPropertyName("expires_at")]
     public long ExpiresAt { get; init; }
 
     [JsonPropertyName("scope")]
