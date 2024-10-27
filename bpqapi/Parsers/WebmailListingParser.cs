@@ -37,15 +37,18 @@ public class WebmailListingParser
     {
         // 06-Oct BN 26386 NTS     ARRL    CX2SA   October 2024 NTS Letter
         // 03-Jun BF  3731 KEP     WW      NC8Q    
+        // 03-Jun BF  3731 KEP     WW      NC8Q
 
-        var day = text[1..3];
-        var month = text[4..7];
-        var state = text[8..10].Trim();
-        var len = text[11..16];
-        var to = text[17..25];
-        var at = text[25..33];
-        var from = text[33..41];
-        var subject = text[41..];
+        text = text.TrimStart();
+
+        var day = text[0..2];
+        var month = text[3..6];
+        var state = text[7..9].Trim();
+        var len = text[10..15];
+        var to = text[16..22];
+        var at = text[24..30];
+        var from = text[32..38];
+        var subject = text[40..];
 
         return new MailListEntity
         {

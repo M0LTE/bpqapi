@@ -29,9 +29,9 @@ public class WebmailResponseParserTests
         mail.Should().HaveCount(221);
 
         mail.Last().Id.Should().Be(1111);
-        mail.Last().To.Should().Be("NTSxxxx");
-        mail.Last().At.Should().Be("ARRLxxx");
-        mail.Last().From.Should().Be("CX2SAxx");
+        mail.Last().To.Should().Be("NTSxxx");
+        mail.Last().At.Should().Be("ARRLxx");
+        mail.Last().From.Should().Be("CX2SAx");
     }
 
     [Fact]
@@ -44,23 +44,23 @@ public class WebmailResponseParserTests
 
         var (token, mail) = result.Value;
 
-        mail[0].Id.Should().Be(6876);
-        mail[0].From.Should().Be("CX2SA");
-        mail[0].To.Should().Be("NTS");
-        mail[0].At.Should().Be("ARRL");
+        mail[0].Id.Should().Be(54273);
+        mail[0].To.Should().Be("G7TAJ");
+        mail[0].At.Should().Be("");
+        mail[0].From.Should().Be("SYSTEM");
         mail[0].Date.Month.Should().Be(10);
-        mail[0].Date.Day.Should().Be(16);
-        mail[0].Type.Should().Be('B');
+        mail[0].Date.Day.Should().Be(13);
+        mail[0].Type.Should().Be('P');
         mail[0].State.Should().Be('N');
-        mail[0].Length.Should().Be(26386);
-        mail[0].Subject.Should().Be("October 2024 NTS Letter");
+        mail[0].Length.Should().Be(61);
+        mail[0].Subject.Should().Be("New User G8PZT");
 
-        mail.Should().HaveCount(221);
+        mail.Should().HaveCount(2126);
 
-        mail.Last().Id.Should().Be(1111);
-        mail.Last().To.Should().Be("NTSxxxx");
-        mail.Last().At.Should().Be("ARRLxxx");
-        mail.Last().From.Should().Be("CX2SAxx");
+        mail.Last().Id.Should().Be(51854);
+        mail.Last().To.Should().Be("DX");
+        mail.Last().At.Should().Be("WW");
+        mail.Last().From.Should().Be("LU9DCE");
     }
 
     [Fact]
