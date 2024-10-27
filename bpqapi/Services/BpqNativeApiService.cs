@@ -149,8 +149,16 @@ public class BpqNativeApiService(HttpClient httpClient, IOptions<BpqApiOptions> 
     }
 }
 
-public class NativeV1MailForwardConfigResponse : Dictionary<string, NativeV1MailForwardConfigResponse.ForwardingConfig>
+public class NativeV1MailForwardConfigResponse
 {
+
+    [JsonPropertyName("forwardconfig")]
+    public ForwardingConfigWrapper[] Config { get; init; } = [];
+
+    public class ForwardingConfigWrapper : Dictionary<string, ForwardingConfig>
+    {
+    }
+
     public readonly record struct ForwardingConfig
     {
         [JsonPropertyName("queueLength")]

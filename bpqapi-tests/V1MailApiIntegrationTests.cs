@@ -1,11 +1,14 @@
-﻿using bpqapi.Services;
+﻿using bpqapi.Models;
+using bpqapi.Services;
 using FluentAssertions;
+using Microsoft.AspNetCore.Mvc.TagHelpers;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace bpqapi_tests;
@@ -31,7 +34,18 @@ public class V1MailApiIntegrationTests
         mail.Messages.Should().NotBeNullOrEmpty();
 
         var fwdConfig = await target.GetForwardConfig(token.AccessToken);
-        var config = fwdConfig[fwdConfig.Keys.First()];
+
+        var dict = new Dictionary<string, NativeV1MailForwardConfigResponse.ForwardingConfig>();
+
+        foreach (var station in fwdConfig.Config)
+        {
+            var call = station.Keys.Single();
+            NativeV1MailForwardConfigResponse.ForwardingConfig config = station[call];
+
+            dict.Add(call, config);
+        }
+
+        var ideal = JsonSerializer.Serialize(dict, new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase, WriteIndented = true });
 
         Debugger.Break();
     }
