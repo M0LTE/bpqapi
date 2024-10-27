@@ -1,5 +1,6 @@
 ﻿using bpqapi.Models;
 using HtmlAgilityPack;
+using System.Text;
 
 namespace bpqapi.Parsers;
 
@@ -33,24 +34,113 @@ public class WebmailListingParser
         }
     }
 
+    private enum ParseState
+    {
+        Day,
+        Month,
+        State,
+        LookingForLength,
+        Length,
+        To,
+        At,
+        From,
+        Subject
+    }
+
     public static MailListEntity ParseMailItem(string text, int id)
     {
         // 06-Oct BN 26386 NTS     ARRL    CX2SA   October 2024 NTS Letter
         // 03-Jun BF  3731 KEP     WW      NC8Q    
         // 03-Jun BF  3731 KEP     WW      NC8Q
 
-        text = text.TrimStart();
+        string month = "", day = "", state = "", len = "", to = "", at = "", from = "";
 
-        var day = text[0..2];
-        var month = text[3..6];
-        var state = text[7..9].Trim();
-        var len = text[10..15];
-        var to = text[16..22];
-        var at = text[24..30];
-        var from = text[32..38];
-        var subject = text[40..];
+        var parseState = ParseState.Day;
+        var sb = new StringBuilder();
 
-        return new MailListEntity
+        for (int i = 0; i < text.Length; i++)
+        {
+            var c = text[i];
+
+            if (parseState == ParseState.Day)
+            {
+                if (char.IsDigit(c))
+                {
+                    parseState = ParseState.Month;
+                    day = new string([c, text[i + 1]]);
+                    i++;
+                }
+            }
+            else if (parseState == ParseState.Month)
+            {
+                if (c == '-')
+                {
+                    continue;
+                }
+                else if (char.IsLetter(c))
+                {
+                    month = new string([c, text[i + 1], text[i + 2]]);
+                    i += 3;
+                    parseState = ParseState.State;
+                }
+            }
+            else if (parseState == ParseState.State)
+            {
+                if (char.IsLetter(c))
+                {
+                    state = new string([c, text[i + 1]]);
+                    i += 2;
+                    parseState = ParseState.LookingForLength;
+                }
+            }
+            else if (parseState == ParseState.LookingForLength)
+            {
+                if (char.IsDigit(c))
+                {
+                    parseState = ParseState.Length;
+                    sb.Clear();
+                    sb.Append(c);
+                }
+            }
+            else if (parseState == ParseState.Length)
+            {
+                if (char.IsDigit(c))
+                {
+                    sb.Append(c);
+                }
+                else if (c == ' ')
+                {
+                    len = sb.ToString();
+                    sb.Clear();
+                    parseState = ParseState.To;
+                }
+            }
+            else if (parseState == ParseState.To)
+            {
+                to = new string([text[i], text[i + 1], text[i + 2], text[i + 3], text[i + 4], text[i + 5]]);
+                parseState = ParseState.At;
+                i += 7;
+            }
+            else if (parseState == ParseState.At)
+            {
+                at = new string([text[i], text[i + 1], text[i + 2], text[i + 3], text[i + 4], text[i + 5]]);
+                parseState = ParseState.From;
+                i += 7;
+            }
+            else if (parseState == ParseState.From)
+            {
+                from = new string([text[i], text[i + 1], text[i + 2], text[i + 3], text[i + 4], text[i + 5]]);
+                parseState = ParseState.Subject;
+                i += 7;
+                sb.Clear();
+            }
+            else if (parseState == ParseState.Subject)
+            {
+                sb.Append(c);
+            }
+        }
+
+        var result = new MailListEntity
         {
             Id = id,
             Date = new MonthAndDay(months[month], int.Parse(day)),
@@ -60,8 +150,10 @@ public class WebmailListingParser
             To = to.Trim(),
             At = at.Trim(),
             From = from.Trim(),
-            Subject = subject.Trim()
+            Subject = sb.ToString().Trim()
         };
+
+        return result;
     }
 
     internal static ParseResult<bool> ParseMaybeLoginPage(string html)

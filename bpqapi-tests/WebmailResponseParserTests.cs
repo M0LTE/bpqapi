@@ -64,7 +64,7 @@ public class WebmailResponseParserTests
     }
 
     [Fact]
-    public void ParseWebmailLineTest01()
+    public void ParseWebmailLineTests01()
     {
         var line = " 13-Jun BF 10946 DX      WW      LU9DCE  DX OPERATION 13-JUN24";
         var mail = WebmailListingParser.ParseMailItem(line, 1);
@@ -93,5 +93,53 @@ public class WebmailResponseParserTests
         mail.At.Should().Be("WW");
         mail.From.Should().Be("NC8Q");
         mail.Subject.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void ParseWebmailLineTests03()
+    {
+        var line = " 13-Jun BF 10946 DX              LU9DCE  DX OPERATION 13-JUN24";
+        var mail = WebmailListingParser.ParseMailItem(line, 1);
+        mail.Date.Day.Should().Be(13);
+        mail.Date.Month.Should().Be(6);
+        mail.Type.Should().Be('B');
+        mail.State.Should().Be('F');
+        mail.Length.Should().Be(10946);
+        mail.To.Should().Be("DX");
+        mail.At.Should().Be("");
+        mail.From.Should().Be("LU9DCE");
+        mail.Subject.Should().Be("DX OPERATION 13-JUN24");
+    }
+
+    [Fact]
+    public void ParseWebmailLineTests04()
+    {
+        var line = " 13-Jun BF  1946 DX              LU9DCE  DX OPERATION 13-JUN24";
+        var mail = WebmailListingParser.ParseMailItem(line, 1);
+        mail.Date.Day.Should().Be(13);
+        mail.Date.Month.Should().Be(6);
+        mail.Type.Should().Be('B');
+        mail.State.Should().Be('F');
+        mail.Length.Should().Be(1946);
+        mail.To.Should().Be("DX");
+        mail.At.Should().Be("");
+        mail.From.Should().Be("LU9DCE");
+        mail.Subject.Should().Be("DX OPERATION 13-JUN24");
+    }
+
+    [Fact]
+    public void ParseWebmailLineTests05()
+    {
+        var line = " 13-Jun BF 1946 DX              LU9DCE  DX OPERATION 13-JUN24";
+        var mail = WebmailListingParser.ParseMailItem(line, 1);
+        mail.Date.Day.Should().Be(13);
+        mail.Date.Month.Should().Be(6);
+        mail.Type.Should().Be('B');
+        mail.State.Should().Be('F');
+        mail.Length.Should().Be(1946);
+        mail.To.Should().Be("DX");
+        mail.At.Should().Be("");
+        mail.From.Should().Be("LU9DCE");
+        mail.Subject.Should().Be("DX OPERATION 13-JUN24");
     }
 }
