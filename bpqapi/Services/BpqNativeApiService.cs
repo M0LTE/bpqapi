@@ -25,7 +25,10 @@ public class BpqNativeApiService(HttpClient httpClient, IOptions<BpqApiOptions> 
     private async Task<T> Get<T>(string relativeUri, string bearerHeaderValue)
     {
         var requestMsg = new HttpRequestMessage(HttpMethod.Get, new Uri(options.Value.Uri, relativeUri));
-        requestMsg.Headers.Authorization = new AuthenticationHeaderValue("Bearer", bearerHeaderValue);
+        if (!string.IsNullOrWhiteSpace(bearerHeaderValue))
+        {
+            requestMsg.Headers.Authorization = new AuthenticationHeaderValue("Bearer", bearerHeaderValue);
+        }
         var response = await httpClient.SendAsync(requestMsg);
         try
         {
@@ -45,15 +48,30 @@ public class BpqNativeApiService(HttpClient httpClient, IOptions<BpqApiOptions> 
         }
     }
 
-    public async Task<NativeMheardElement[]> GetMheard(string legacyAccessToken, int portNumber)
+    public async Task<NativeMheardResponse> GetMheard(string legacyAccessToken, int portNumber)
     {
-        var response = await Get("api/mheardport?" + portNumber, legacyAccessToken);
+        var response = await Get("api/mheard/" + portNumber, legacyAccessToken);
         response.EnsureSuccessStatusCode();
-
         var str = await response.Content.ReadAsStringAsync();
-        var result = JsonSerializer.Deserialize<NativeMheardElement[]>($"[{str}]")!; // fix up mistake
+        var result = JsonSerializer.Deserialize<NativeMheardResponse>(str);
+        return result;
+    }
 
-        return result.ToArray();
+    public readonly record struct NativeMheardResponse
+    {
+        [JsonPropertyName("mheard")]
+        public NativeMheardResponseElement[] Mheard { get; init; }
+        public readonly record struct NativeMheardResponseElement
+        {
+            [JsonPropertyName("callSign")]
+            public string Callsign { get; init; }
+            [JsonPropertyName("port")]
+            public string Port { get; init; }
+            [JsonPropertyName("packets")]
+            public int Packets { get; init; }
+            [JsonPropertyName("lastHeard")]
+            public string LastHeard { get; init; }
+        }
     }
 
     public async Task<NativeGetPortsResponse> GetPorts(string legacyAccessToken)
@@ -142,24 +160,16 @@ public class BpqNativeApiService(HttpClient httpClient, IOptions<BpqApiOptions> 
         return response;
     }
 
-    public async Task<NativeV1MailForwardConfigResponse> GetForwardConfig(string mailAccessToken)
+    public async Task<NativeMailForwardConfigV1Response> GetForwardConfig(string mailAccessToken)
     {
-        var response = await Get<NativeV1MailForwardConfigResponse>("api/v1/mail/FwdConfig", mailAccessToken);
+        var response = await Get<NativeMailForwardConfigV1Response>("api/v1/mail/FwdConfig", mailAccessToken);
         return response;
     }
 }
 
-public class NativeV1MailForwardConfigResponse
+public class NativeMailForwardConfigV1Response : Dictionary<string, NativeMailForwardConfigV1Response.NativeForwardingConfigV1>
 {
-
-    [JsonPropertyName("forwardconfig")]
-    public ForwardingConfigWrapper[] Config { get; init; } = [];
-
-    public class ForwardingConfigWrapper : Dictionary<string, ForwardingConfig>
-    {
-    }
-
-    public readonly record struct ForwardingConfig
+    public readonly record struct NativeForwardingConfigV1
     {
         [JsonPropertyName("queueLength")]
         public int QueueLength { get; init; }
@@ -223,17 +233,24 @@ public class NativeV1MailForwardConfigResponse
     }
 }
 
+/*
+{"forwardqueuelength":[
+{"call": "GB7RDG","queueLength": "0"},
+{"call": "M0LTE","queueLength": "0"},
+{"call": "TEST","queueLength": "0"}
+]}
+ */
 public readonly record struct NativeV1MailForwardQueueLengthResponse
 {
     [JsonPropertyName("forwardqueuelength")]
-    public ForwardQueueLengthElement Queues { get; init; }
+    public ForwardQueueLengthElement[] Queues { get; init; }
 
     public record struct ForwardQueueLengthElement
     {
         [JsonPropertyName("call")]
         public string Call { get; init; }
         [JsonPropertyName("queueLength")]
-        public int QueueLength { get; init; }
+        public string QueueLength { get; init; }
     }
 }
 

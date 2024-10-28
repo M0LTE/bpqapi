@@ -29,9 +29,8 @@ public class BpqApiServiceTests
     {
         var token = await target.RequestLegacyToken();
 
-        var mheard = await target.GetMheard(token.AccessToken, 2);
-
-        mheard.Should().NotBeEmpty();
+        var response = await target.GetMheard(token.AccessToken, 2);
+        response.Mheard.Should().NotBeEmpty();
     }
 
     [Fact]

@@ -6,15 +6,15 @@ using System.Globalization;
 namespace bpqapi.Controllers;
 
 [Route("node")]
-public class NodeController(BpqNativeApiService bpqApiService, BpqTelnetClient bpqTelnetClient) : ControllerBase
+public class NodeController(BpqNativeApiService nativeApiService, BpqTelnetClient bpqTelnetClient) : ControllerBase
 {
-    private async Task<string> GetToken() => (await bpqApiService.RequestLegacyToken()).AccessToken;
+    private async Task<string> GetToken() => (await nativeApiService.RequestLegacyToken()).AccessToken;
 
     [HttpGet("info")]
     [ProducesResponseType(200, Type = typeof(GetInfoResponse))]
     public async Task<IActionResult> Info()
     {
-        var data = await bpqApiService.GetInfo(await GetToken());
+        var data = await nativeApiService.GetInfo(await GetToken());
         return Ok(new GetInfoResponse
         {
             Alias = data.Info.Alias,
@@ -30,13 +30,13 @@ public class NodeController(BpqNativeApiService bpqApiService, BpqTelnetClient b
     public async Task<IActionResult> MHeard()
     {
         var token = await GetToken();
-        var ports = await bpqApiService.GetPorts(token);
+        var ports = await nativeApiService.GetPorts(token);
 
         var results = new List<MHeardMultiportDetails>();
         foreach (var port in ports.Ports)
         {
-            var data = await bpqApiService.GetMheard(token, port.Number);
-            results.AddRange(data.Select(item => new MHeardMultiportDetails
+            var data = await nativeApiService.GetMheard(token, port.Number);
+            results.AddRange(data.Mheard.Select(item => new MHeardMultiportDetails
             {
                 Callsign = item.Callsign,
                 LastHeard = DateTime.ParseExact(item.LastHeard, "yyyy-M-d HH:mm:ss", CultureInfo.InvariantCulture, DateTimeStyles.AdjustToUniversal),
@@ -52,9 +52,9 @@ public class NodeController(BpqNativeApiService bpqApiService, BpqTelnetClient b
     [ProducesResponseType(200, Type = typeof(Dictionary<string, MHeardMonoportDetails>))]
     public async Task<IActionResult> Mheard(int portNumber)
     {
-        var data = await bpqApiService.GetMheard(await GetToken(), portNumber);
+        var data = await nativeApiService.GetMheard(await GetToken(), portNumber);
 
-        return Ok(data.ToDictionary(item => item.Callsign, item => new MHeardMonoportDetails
+        return Ok(data.Mheard.ToDictionary(item => item.Callsign, item => new MHeardMonoportDetails
         {
             LastHeard = DateTime.ParseExact(item.LastHeard, "yyyy-M-d HH:mm:ss", CultureInfo.InvariantCulture, DateTimeStyles.AdjustToUniversal),
             Packets = item.Packets
