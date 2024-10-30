@@ -39,6 +39,7 @@ public class V1MailApiIntegrationTests
     [Fact]
     public async Task GetForwardConfig()
     {
-        var fwdConfig = await target.GetForwardConfig("");
+        var token = await target.RequestMailToken("telnetuser", "telnetpass");
+        var fwdConfig = await target.GetForwardConfig(token.AccessToken);
     }
 }
