@@ -1,7 +1,9 @@
 ﻿using bpqapi;
 using bpqapi.Services;
 using FluentAssertions;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Moq;
 using System.Net;
 
 namespace bpqapi_tests;
@@ -49,7 +51,7 @@ public class BpqApiServiceTests
     [Fact]
     public async Task TestSendMail()
     {
-        var bpqUiService = new BpqUiService(new Options(new Uri("http://gb7rdg-node:8008")), new HttpClient(new HttpClientHandler { AutomaticDecompression = DecompressionMethods.Deflate | DecompressionMethods.GZip }));
+        var bpqUiService = new BpqUiService(new Options(new Uri("http://gb7rdg-node:8008")), new HttpClient(new HttpClientHandler { AutomaticDecompression = DecompressionMethods.Deflate | DecompressionMethods.GZip }), Mock.Of<ILogger<BpqUiService>>());
         await bpqUiService.SendWebmail("m0lte", "xxx", new bpqapi.Models.SendMailEntity
         {
             To = "test",

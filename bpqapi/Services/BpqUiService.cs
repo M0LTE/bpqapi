@@ -6,7 +6,7 @@ using System.Text;
 
 namespace bpqapi.Services;
 
-public class BpqUiService(IOptions<BpqApiOptions> options, HttpClient httpClient)
+public class BpqUiService(IOptions<BpqApiOptions> options, HttpClient httpClient, ILogger<BpqUiService> logger)
 {
     private readonly BpqApiOptions options = options.Value;
 
@@ -151,7 +151,7 @@ public class BpqUiService(IOptions<BpqApiOptions> options, HttpClient httpClient
         }
     }
 
-    private string? lastUser, lassPassword, lastToken;
+    private static string? lastUser, lassPassword, lastToken;
 
     /// <summary>
     /// All mail of all types
@@ -214,19 +214,38 @@ public class BpqUiService(IOptions<BpqApiOptions> options, HttpClient httpClient
     {
         if (lastUser != user || lassPassword != password || lastToken == null)
         {
+            logger.LogInformation("Authenticating {user} for webmail", user);
             await WebmailAuth(user, password);
         }
     }
 
-    public async Task<MailEntity?> GetWebmailItem(string user, string password, int id)
+    public async Task<List<MailEntity>> GetWebmailItems(string user, string password, int[] ids)
     {
         await AssureToken(user, password);
 
-        // http://gb7rdg-node:8008/WebMail/WM?W3B8745EB&6925
+        var result = new List<MailEntity>();
+        try
+        {
+            await GetData(httpClient, ids, result);
+        }
+        catch (LoginFailedException)
+        {
+            lastToken = null;
+            result.Clear();
+            await GetData(httpClient, ids, result);
+        }
 
-        var html = await httpClient.GetStringAsync(new Uri(options.Uri, $"WebMail/WM?{lastToken}&{id}"));
-        var mail = WebmailParser.Parse(html).EnsureSuccess();
-        return mail;
+        return result;
+
+        async Task GetData(HttpClient httpClient, int[] ids, List<MailEntity> result)
+        {
+            foreach (var id in ids)
+            {
+                var html = await httpClient.GetStringAsync(new Uri(options.Uri, $"WebMail/WM?{lastToken}&{id}"));
+                var mail = WebmailParser.Parse(html).EnsureSuccess();
+                result.Add(mail);
+            }
+        }
     }
 
     public async Task SendWebmail(string user, string password, SendMailEntity mail)

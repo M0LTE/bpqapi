@@ -12,14 +12,24 @@ namespace bpqapi.Controllers;
 public class MailController(BpqUiService bpqUiService, BpqTelnetClient bpqTelnetClient) : ControllerBase
 {
     /// <summary>
-    /// Retrieve mail item by id
+    /// Retrieve mail items by comma separated id. For backwards compatibility, will only return an array if more than one item is requested.
     /// </summary>
     /// <param name="id"></param>
     /// <returns></returns>
     [HttpGet("{id}")]
     [ProducesResponseType(typeof(MailEntity), 200)]
-    public async Task<IActionResult> GetMailItem(int id)
+    public async Task<IActionResult> GetMailItem(string id)
     {
+        int[] ids;
+        if (id.Contains(","))
+        {
+            ids = id.Split(",", StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries).Select(int.Parse).ToArray();
+        }
+        else
+        {
+            ids = [int.Parse(id)];
+        }
+
         var header = HttpContext.ParseBasicAuthHeader();
 
         if (header == null)
@@ -29,7 +39,15 @@ public class MailController(BpqUiService bpqUiService, BpqTelnetClient bpqTelnet
 
         try
         {
-            return Ok(await bpqUiService.GetWebmailItem(header.Value.User, header.Value.Password, id));
+            var items = await bpqUiService.GetWebmailItems(header.Value.User, header.Value.Password, ids);
+            if (items.Count == 1)
+            {
+                return Ok(items.Single());
+            }
+            else
+            {
+                return Ok(items);
+            }
         }
         catch (LoginFailedException)
         {
