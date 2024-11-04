@@ -12,23 +12,25 @@ namespace bpqapi.Controllers;
 public class MailController(BpqUiService bpqUiService, BpqTelnetClient bpqTelnetClient) : ControllerBase
 {
     /// <summary>
-    /// Retrieve mail items by comma separated id. For backwards compatibility, will only return an array if more than one item is requested.
+    /// Retrieve mail items by comma separated id.
     /// </summary>
-    /// <param name="id"></param>
+    /// <param name="ids"></param>
     /// <returns></returns>
-    [HttpGet("{id}")]
-    [ProducesResponseType(typeof(MailEntity), 200)]
-    public async Task<IActionResult> GetMailItem(string id)
+    [HttpGet("{ids}")]
+    [ProducesResponseType(typeof(MailEntity[]), 200)]
+    public async Task<IActionResult> GetMailItems(string ids)
     {
-        int[] ids;
-        if (id.Contains(","))
+        var idsSplit = ids.Split(",", StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+
+        foreach (var id in idsSplit)
         {
-            ids = id.Split(",", StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries).Select(int.Parse).ToArray();
+            if (!int.TryParse(id, out _))
+            {
+                return BadRequest("Invalid ID " + id);
+            }
         }
-        else
-        {
-            ids = [int.Parse(id)];
-        }
+
+        var idInts = idsSplit.Select(int.Parse).ToArray();
 
         var header = HttpContext.ParseBasicAuthHeader();
 
@@ -39,15 +41,7 @@ public class MailController(BpqUiService bpqUiService, BpqTelnetClient bpqTelnet
 
         try
         {
-            var items = await bpqUiService.GetWebmailItems(header.Value.User, header.Value.Password, ids);
-            if (items.Count == 1)
-            {
-                return Ok(items.Single());
-            }
-            else
-            {
-                return Ok(items);
-            }
+            return Ok(await bpqUiService.GetWebmailItems(header.Value.User, header.Value.Password, idInts));
         }
         catch (LoginFailedException)
         {
