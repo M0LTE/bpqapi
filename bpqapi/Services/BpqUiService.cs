@@ -1,4 +1,5 @@
-﻿using bpqapi.Models;
+﻿using Aspects.Cache;
+using bpqapi.Models;
 using bpqapi.Parsers;
 using Microsoft.Extensions.Options;
 using System.Net.Http.Headers;
@@ -226,26 +227,32 @@ public class BpqUiService(IOptions<BpqApiOptions> options, HttpClient httpClient
         var result = new List<MailEntity>();
         try
         {
-            await GetData(httpClient, ids, result);
+            await GetData(ids, result);
         }
         catch (LoginFailedException)
         {
             lastToken = null;
             result.Clear();
-            await GetData(httpClient, ids, result);
+            await GetData(ids, result);
         }
 
         return result;
+    }
 
-        async Task GetData(HttpClient httpClient, int[] ids, List<MailEntity> result)
+    private async Task GetData(int[] ids, List<MailEntity> result)
+    {
+        foreach (var id in ids)
         {
-            foreach (var id in ids)
-            {
-                var html = await httpClient.GetStringAsync(new Uri(options.Uri, $"WebMail/WM?{lastToken}&{id}"));
-                var mail = WebmailParser.Parse(html).EnsureSuccess();
-                result.Add(mail);
-            }
+            result.Add(await GetMail(id));
         }
+    }
+
+    [MemoryCache(604800)]
+    private async Task<MailEntity> GetMail(int id)
+    {
+        var html = await httpClient.GetStringAsync(new Uri(options.Uri, $"WebMail/WM?{lastToken}&{id}"));
+        var mail = WebmailParser.Parse(html).EnsureSuccess();
+        return mail;
     }
 
     public async Task SendWebmail(string user, string password, SendMailEntity mail)
