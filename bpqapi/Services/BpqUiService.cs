@@ -257,11 +257,15 @@ public class BpqUiService(IOptions<BpqApiOptions> options, HttpClient httpClient
 
     public async Task SendWebmail(string user, string password, SendMailEntity mail)
     {
-        // http://gb7rdg-node:8008/WebMail/EMSave?W7A4CFEBB
+        try
+        {
+            logger.LogInformation("Sending mail {@mail} from {from}", mail, user);
 
-        await AssureToken(user, password);
+            await AssureToken(user, password);
 
-        var form = new MultipartFormDataContent()
+            logger.LogInformation("Token for {user} assured", user);
+
+            var form = new MultipartFormDataContent()
         {
             { BuildStringContent("To", mail.To), "To" },
             { BuildStringContent("Subj", mail.Subject), "Subj" },
@@ -274,13 +278,21 @@ public class BpqUiService(IOptions<BpqApiOptions> options, HttpClient httpClient
             { BuildStringContent("Send", "Send"), "Send" },
         };
 
-        var request = new HttpRequestMessage(HttpMethod.Post, new Uri(options.Uri, $"WebMail/EMSave?{lastToken}"));
-        request.Content = form;
+            var request = new HttpRequestMessage(HttpMethod.Post, new Uri(options.Uri, $"WebMail/EMSave?{lastToken}"));
+            request.Content = form;
 
-        var listResponse = await httpClient.SendAsync(request);
-        listResponse.EnsureSuccessStatusCode();
+            logger.LogInformation("Sending request to BPQ");
+            var listResponse = await httpClient.SendAsync(request);
 
-        var response = await listResponse.Content.ReadAsStringAsync();
+            var response = await listResponse.Content.ReadAsStringAsync();
+            logger.LogInformation("Received {statusCode} response from BPQ: {response}", (int)listResponse.StatusCode, response);
+            listResponse.EnsureSuccessStatusCode();
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Exception in BpqUiService.SendWebmail");
+            throw;
+        }
     }
 
     private static StringContent BuildStringContent(string name, string content)
