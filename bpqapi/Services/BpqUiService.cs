@@ -158,7 +158,6 @@ public class BpqUiService(IOptions<BpqApiOptions> options, HttpClient httpClient
     /// </summary>
     public async Task<MailListEntity[]> GetWebmailAllMailList(string user, string password)
     {
-        logger.LogInformation(nameof(GetWebmailAllMailList));
         return await GetMail(user, password, "WMALL");
     }
 
@@ -167,7 +166,6 @@ public class BpqUiService(IOptions<BpqApiOptions> options, HttpClient httpClient
     /// </summary>
     public async Task<MailListEntity[]> GetWebmailBullsList(string user, string password)
     {
-        logger.LogInformation(nameof(GetWebmailBullsList));
         return await GetMail(user, password, "WMB");
     }
 
@@ -176,7 +174,6 @@ public class BpqUiService(IOptions<BpqApiOptions> options, HttpClient httpClient
     /// </summary>
     public async Task<MailListEntity[]> GetWebmailPersonalsList(string user, string password)
     {
-        logger.LogInformation(nameof(GetWebmailPersonalsList));
         return await GetMail(user, password, "WMP");
     }
 
@@ -185,7 +182,6 @@ public class BpqUiService(IOptions<BpqApiOptions> options, HttpClient httpClient
     /// </summary>
     public async Task<MailListEntity[]> GetMyMail(string user, string password)
     {
-        logger.LogInformation(nameof(GetMyMail));
         return await GetMail(user, password, "WMMine");
     }
 
@@ -194,7 +190,6 @@ public class BpqUiService(IOptions<BpqApiOptions> options, HttpClient httpClient
     /// </summary>
     public async Task<MailListEntity[]> GetWebmailSentMail(string user, string password)
     {
-        logger.LogInformation(nameof(GetWebmailSentMail));
         return await GetMail(user, password, "WMfromMe");
     }
 
@@ -203,7 +198,6 @@ public class BpqUiService(IOptions<BpqApiOptions> options, HttpClient httpClient
     /// </summary>
     public async Task<MailListEntity[]> GetWebmailInbox(string user, string password)
     {
-        logger.LogInformation(nameof(GetWebmailInbox));
         return await GetMail(user, password, "WMtoMe");
     }
 
@@ -261,7 +255,29 @@ public class BpqUiService(IOptions<BpqApiOptions> options, HttpClient httpClient
         else
         {
             var html = await httpClient.GetStringAsync(new Uri(options.Uri, $"WebMail/WM?{lastToken}&{id}"));
-            var mail = WebmailParser.Parse(html).EnsureSuccess();
+            var result = WebmailParser.Parse(html);
+
+            MailEntity mail;
+
+            if (result.Success)
+            {
+                mail = result.Value;
+            }
+            else
+            {
+                mail = new MailEntity
+                {
+                    Id = id,
+                    Subject = "Error",
+                    From = "unknown",
+                    To = "unknown",
+                    Date = MonthAndDay.UtcToday,
+                    DateTime = DateTime.UtcNow,
+                    Time = TimeOnly.FromDateTime(DateTime.UtcNow),
+                    Body = $"There was an error while parsing this mail with id {id}:\n\n" + result.Exception?.ToString()
+                };
+            }
+
             cache.Add(id, mail);
             return mail;
         }
@@ -297,7 +313,8 @@ public class BpqUiService(IOptions<BpqApiOptions> options, HttpClient httpClient
             var listResponse = await httpClient.SendAsync(request);
 
             var response = await listResponse.Content.ReadAsStringAsync();
-            logger.LogInformation("Received {statusCode} response from BPQ: {response}", (int)listResponse.StatusCode, response);
+            //logger.LogInformation("Received {statusCode} response from BPQ: {response}", (int)listResponse.StatusCode, response);
+            logger.LogInformation("Received {statusCode} response from BPQ", (int)listResponse.StatusCode);
             listResponse.EnsureSuccessStatusCode();
         }
         catch (Exception ex)

@@ -7,8 +7,7 @@
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development",
         "bpq__telnetTcpPort": "8010",
-        "bpq__uri": "http://mainpc-debian-wsl:8008/",
-        "bpq__uri__": "http://gb7rdg-node:8008",
+        "bpq__uri": "http://gb7rdg-node:8008",
         "bpq__ctext": "Welcome to GB7RDG Telnet Server\\n Enter ? for list of commands\\n\\n"
       },
       "dotnetRunMessages": true,

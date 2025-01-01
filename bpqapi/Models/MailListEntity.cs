@@ -13,7 +13,10 @@ public readonly record struct MailListEntity
     public string Subject { get; init; }
 }
 
-public readonly record struct MonthAndDay(int Month, int Day);
+public readonly record struct MonthAndDay(int Month, int Day)
+{
+    public static MonthAndDay UtcToday => new(DateTime.UtcNow.Month, DateTime.UtcNow.Day);
+}
 
 public readonly record struct MailEntity
 {
