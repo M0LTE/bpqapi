@@ -1,5 +1,4 @@
-﻿using Aspects.Cache;
-using bpqapi.Models;
+﻿using bpqapi.Models;
 using bpqapi.Parsers;
 using Microsoft.Extensions.Options;
 using System.Net.Http.Headers;
@@ -7,7 +6,7 @@ using System.Text;
 
 namespace bpqapi.Services;
 
-public class BpqUiService(IOptions<BpqApiOptions> options, HttpClient httpClient, ILogger<BpqUiService> logger)
+public class BpqUiService(IOptions<BpqApiOptions> options, HttpClient httpClient, ILogger<BpqUiService> logger, BpqMailCache cache)
 {
     private readonly BpqApiOptions options = options.Value;
 
@@ -18,7 +17,7 @@ public class BpqUiService(IOptions<BpqApiOptions> options, HttpClient httpClient
     }
 
     public async Task<ForwardingStation[]> GetMailForwardingPartners(string token)
-    { 
+    {
         // post http://gb7rdg-node:8008/Mail/FwdList.txt?M0000FB748BFF
 
         var listResponse = await httpClient.PostAsync(new Uri(options.Uri, $"Mail/FwdList.txt?{token}"), new FormUrlEncodedContent([]));
@@ -159,6 +158,7 @@ public class BpqUiService(IOptions<BpqApiOptions> options, HttpClient httpClient
     /// </summary>
     public async Task<MailListEntity[]> GetWebmailAllMailList(string user, string password)
     {
+        logger.LogInformation(nameof(GetWebmailAllMailList));
         return await GetMail(user, password, "WMALL");
     }
 
@@ -167,6 +167,7 @@ public class BpqUiService(IOptions<BpqApiOptions> options, HttpClient httpClient
     /// </summary>
     public async Task<MailListEntity[]> GetWebmailBullsList(string user, string password)
     {
+        logger.LogInformation(nameof(GetWebmailBullsList));
         return await GetMail(user, password, "WMB");
     }
 
@@ -175,6 +176,7 @@ public class BpqUiService(IOptions<BpqApiOptions> options, HttpClient httpClient
     /// </summary>
     public async Task<MailListEntity[]> GetWebmailPersonalsList(string user, string password)
     {
+        logger.LogInformation(nameof(GetWebmailPersonalsList));
         return await GetMail(user, password, "WMP");
     }
 
@@ -183,6 +185,7 @@ public class BpqUiService(IOptions<BpqApiOptions> options, HttpClient httpClient
     /// </summary>
     public async Task<MailListEntity[]> GetMyMail(string user, string password)
     {
+        logger.LogInformation(nameof(GetMyMail));
         return await GetMail(user, password, "WMMine");
     }
 
@@ -191,6 +194,7 @@ public class BpqUiService(IOptions<BpqApiOptions> options, HttpClient httpClient
     /// </summary>
     public async Task<MailListEntity[]> GetWebmailSentMail(string user, string password)
     {
+        logger.LogInformation(nameof(GetWebmailSentMail));
         return await GetMail(user, password, "WMfromMe");
     }
 
@@ -199,6 +203,7 @@ public class BpqUiService(IOptions<BpqApiOptions> options, HttpClient httpClient
     /// </summary>
     public async Task<MailListEntity[]> GetWebmailInbox(string user, string password)
     {
+        logger.LogInformation(nameof(GetWebmailInbox));
         return await GetMail(user, password, "WMtoMe");
     }
 
@@ -247,12 +252,19 @@ public class BpqUiService(IOptions<BpqApiOptions> options, HttpClient httpClient
         }
     }
 
-    [MemoryCache(604800)]
     private async Task<MailEntity> GetMail(int id)
     {
-        var html = await httpClient.GetStringAsync(new Uri(options.Uri, $"WebMail/WM?{lastToken}&{id}"));
-        var mail = WebmailParser.Parse(html).EnsureSuccess();
-        return mail;
+        if (cache.TryGetValue(id, out var cached))
+        {
+            return cached!.Value;
+        }
+        else
+        {
+            var html = await httpClient.GetStringAsync(new Uri(options.Uri, $"WebMail/WM?{lastToken}&{id}"));
+            var mail = WebmailParser.Parse(html).EnsureSuccess();
+            cache.Add(id, mail);
+            return mail;
+        }
     }
 
     public async Task SendWebmail(string user, string password, SendMailEntity mail)

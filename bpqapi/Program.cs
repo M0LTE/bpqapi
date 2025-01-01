@@ -22,6 +22,7 @@ builder.Services.AddSwaggerGen(c =>
 builder.Services.Configure<BpqApiOptions>(builder.Configuration.GetSection("bpq"));
 builder.Services.AddSingleton<BpqUiService>();
 builder.Services.AddSingleton<BpqNativeApiService>();
+builder.Services.AddSingleton<BpqMailCache>();
 builder.Services.AddTransient<BpqTelnetClient>();
 builder.Services.AddHttpClient<BpqUiService>(client =>
 {

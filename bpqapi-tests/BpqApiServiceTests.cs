@@ -51,7 +51,7 @@ public class BpqApiServiceTests
     [Fact]
     public async Task TestSendMail()
     {
-        var bpqUiService = new BpqUiService(new Options(new Uri("http://gb7rdg-node:8008")), new HttpClient(new HttpClientHandler { AutomaticDecompression = DecompressionMethods.Deflate | DecompressionMethods.GZip }), Mock.Of<ILogger<BpqUiService>>());
+        var bpqUiService = new BpqUiService(new Options(new Uri("http://gb7rdg-node:8008")), new HttpClient(new HttpClientHandler { AutomaticDecompression = DecompressionMethods.Deflate | DecompressionMethods.GZip }), Mock.Of<ILogger<BpqUiService>>(), Mock.Of<BpqMailCache>());
         await bpqUiService.SendWebmail("m0lte", "xxx", new bpqapi.Models.SendMailEntity
         {
             To = "test",
