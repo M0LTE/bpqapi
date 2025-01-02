@@ -141,8 +141,7 @@ public class MailController(BpqUiService bpqUiService, BpqTelnetClient bpqTelnet
 
         try
         {
-            var items = await bpqUiService.GetWebmailInbox(header.Value.User, header.Value.Password); // hack
-            //var items = await bpqUiService.GetWebmailPersonalsList(header.Value.User, header.Value.Password);
+            var items = await bpqUiService.GetWebmailPersonalsList(header.Value.User, header.Value.Password);
             logger.LogInformation("Call to /mail/personal returned {Count} items", items.Length);
             return Ok(items);
         }
