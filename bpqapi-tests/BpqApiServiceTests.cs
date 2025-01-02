@@ -14,7 +14,7 @@ public class BpqApiServiceTests
 
     public BpqApiServiceTests()
     {
-        target = new BpqNativeApiService(new HttpClient(), new Options(new Uri("http://localhost")));
+        target = new BpqNativeApiService(new HttpClient(), new Options(new Uri("http://gb7rdg-node:8008")));
     }
 
     [Fact]
@@ -60,6 +60,13 @@ public class BpqApiServiceTests
             Subject = "test23467",
             Type = 'P'
         });
+    }
+
+    [Fact]
+    public async Task TestGetMail()
+    {
+        var token = await target.RequestMailToken("m0lte", Environment.GetEnvironmentVariable("bpq_password") ?? throw new Exception("Missing environment variable bpq_password"));
+        var response = await target.GetMessagesV1(token.AccessToken);
     }
 }
 
