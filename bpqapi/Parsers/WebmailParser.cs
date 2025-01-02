@@ -38,7 +38,9 @@ public class WebmailParser
             DateTime dt;
             if (dateTime != null)
             {
-                dt = DateTime.ParseExact(dateTime, "dd-MMM HH:mmZ", CultureInfo.InvariantCulture, DateTimeStyles.AdjustToUniversal);
+                var parsed = DateTime.ParseExact(dateTime, "dd-MMM HH:mmZ", CultureInfo.InvariantCulture, DateTimeStyles.AdjustToUniversal);
+                var year = parsed.Month <= DateTime.UtcNow.Month ? 2025 : 2024; // hack for now.
+                dt = new DateTime(year, parsed.Month, parsed.Day, parsed.Hour, parsed.Minute, 0, DateTimeKind.Utc);
             }
             else
             {
