@@ -1,6 +1,8 @@
 ﻿using bpqapi.Models;
 using bpqapi.Parsers;
 using FluentAssertions;
+using Microsoft.Extensions.Logging;
+using Moq;
 
 namespace bpqapi_tests;
 
@@ -10,7 +12,7 @@ public class WebmailParserTests
     public void ParseMailPage01()
     {
         var html = File.ReadAllText("TestData/mailsample-01.html");
-        var result = WebmailParser.Parse(html);
+        var result = WebmailParser.Parse(html, Mock.Of<ILogger>());
 
         result.Success.Should().BeTrue();
         result.Exception.Should().BeNull();
@@ -41,7 +43,7 @@ public class WebmailParserTests
     public void ParseMailPage02()
     {
         var html = File.ReadAllText("TestData/mailsample-02.html");
-        var result = WebmailParser.Parse(html);
+        var result = WebmailParser.Parse(html, Mock.Of<ILogger>());
 
         result.Success.Should().BeTrue();
         result.Exception.Should().BeNull();

@@ -22,7 +22,7 @@ public class BpqNativeApiService(HttpClient httpClient, IOptions<BpqApiOptions> 
         return response;
     }
 
-    private async Task<T> Get<T>(string relativeUri, string bearerHeaderValue)
+    private async Task<T> Get<T>(string relativeUri, string? bearerHeaderValue)
     {
         var requestMsg = new HttpRequestMessage(HttpMethod.Get, new Uri(options.Value.Uri, relativeUri));
         if (!string.IsNullOrWhiteSpace(bearerHeaderValue))

@@ -255,7 +255,7 @@ public class BpqUiService(IOptions<BpqApiOptions> options, HttpClient httpClient
         else
         {
             var html = await httpClient.GetStringAsync(new Uri(options.Uri, $"WebMail/WM?{lastToken}&{id}"));
-            var result = WebmailParser.Parse(html);
+            var result = WebmailParser.Parse(html, logger);
 
             MailEntity mail;
 

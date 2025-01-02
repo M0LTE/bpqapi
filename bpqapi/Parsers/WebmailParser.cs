@@ -7,7 +7,7 @@ namespace bpqapi.Parsers;
 
 public class WebmailParser
 {
-    public static ParseResult<MailEntity> Parse(string html)
+    public static ParseResult<MailEntity> Parse(string html, ILogger logger)
     {
         static string? GetField(string[] lines, string fieldName)
         {
@@ -41,10 +41,12 @@ public class WebmailParser
                 var parsed = DateTime.ParseExact(dateTime, "dd-MMM HH:mmZ", CultureInfo.InvariantCulture, DateTimeStyles.AdjustToUniversal);
                 var year = parsed.Month <= DateTime.UtcNow.Month ? 2025 : 2024; // hack for now.
                 dt = new DateTime(year, parsed.Month, parsed.Day, parsed.Hour, parsed.Minute, 0, DateTimeKind.Utc);
+                logger.LogInformation("Assuming dateTime {input} means {output:yyyy-MM-dd HH:mm}", dateTime, dt);
             }
             else
             {
                 dt = DateTime.ParseExact(date!, "yyyy/MM/dd HH:mm", CultureInfo.InvariantCulture, DateTimeStyles.AdjustToUniversal);
+                logger.LogInformation("Assuming dt {input} means {output:yyyy-MM-dd HH:mm}", dateTime, dt);
             }
 
             var bid = GetField(lines, "Bid: ");
