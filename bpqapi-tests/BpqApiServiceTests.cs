@@ -67,6 +67,7 @@ public class BpqApiServiceTests
     {
         var token = await target.RequestMailToken("m0lte", Environment.GetEnvironmentVariable("bpq_password") ?? throw new Exception("Missing environment variable bpq_password"));
         var response = await target.GetMessagesV1(token.AccessToken);
+        response.Messages.Should().HaveCountGreaterThan(11);
     }
 }
 

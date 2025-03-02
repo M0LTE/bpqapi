@@ -250,7 +250,7 @@ public class BpqUiService(IOptions<BpqApiOptions> options, HttpClient httpClient
     {
         if (cache.TryGetValue(id, out var cached))
         {
-            return cached!.Value;
+            return cached!;
         }
         else
         {

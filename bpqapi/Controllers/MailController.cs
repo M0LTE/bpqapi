@@ -9,7 +9,7 @@ namespace bpqapi.Controllers;
 /// </summary>
 [ApiController]
 [Route("mail")]
-public class MailController(BpqUiService bpqUiService, BpqTelnetClient bpqTelnetClient, ILogger<MailController> logger) : ControllerBase
+public class MailController(BpqUiService bpqUiService, BpqTelnetClient bpqTelnetClient, ILogger<MailController> logger, BpqNativeApiService bpqNativeApiService) : ControllerBase
 {
     /// <summary>
     /// Retrieve mail items by comma separated id.
@@ -42,7 +42,17 @@ public class MailController(BpqUiService bpqUiService, BpqTelnetClient bpqTelnet
         try
         {
             var items = await bpqUiService.GetWebmailItems(header.Value.User, header.Value.Password, idInts);
+            var token = await bpqNativeApiService.RequestMailToken(header.Value.User, header.Value.Password);
+            var nativeResponse = await bpqNativeApiService.GetMessagesV1(token.AccessToken);
+
+            foreach (var item in items)
+            {
+                var nativeItem = nativeResponse.Messages.Single(m => m.Id == item.Id);
+                item.DateTime = DateTime.UnixEpoch.AddSeconds(nativeItem.Received);
+            }
+
             logger.LogInformation("Call to /mail/{{ids}} returned {Count} items", items.Count);
+
             return Ok(items);
         }
         catch (LoginFailedException)
@@ -227,6 +237,25 @@ public class MailController(BpqUiService bpqUiService, BpqTelnetClient bpqTelnet
         {
             return Unauthorized("BPQ rejected that BBS login");
         }
+    }
+
+    /// <summary>
+    /// Set message state
+    /// </summary>
+    /// <param name="id"></param>
+    /// <param name="read"></param>
+    /// <returns></returns>
+    [HttpPatch("{id}")]
+    public IActionResult MarkReadState(int id, [FromQuery]bool? read)
+    {
+        var header = HttpContext.ParseBasicAuthHeader();
+
+        if (header == null)
+        {
+            return BadRequest("BBS callsign and password required as basic auth header");
+        }
+
+        return Ok("not yet implemented");
     }
 }
 
