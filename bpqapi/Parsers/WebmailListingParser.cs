@@ -1,4 +1,5 @@
 ﻿using bpqapi.Models;
+using bpqapi.Services;
 using HtmlAgilityPack;
 using System.Text;
 
@@ -8,6 +9,11 @@ public class WebmailListingParser
 {
     public static ParseResult<(string token, MailListEntity[] mail)> Parse(string html)
     {
+        if (html.Contains("Please enter Callsign and Password to access WebMail"))
+        {
+            return ParseResult<(string token, MailListEntity[] mail)>.CreateFailure(new LoginFailedException(), html);
+        }
+
         try
         {
             var doc = new HtmlDocument();

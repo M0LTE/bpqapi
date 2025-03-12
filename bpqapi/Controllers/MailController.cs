@@ -9,7 +9,7 @@ namespace bpqapi.Controllers;
 /// </summary>
 [ApiController]
 [Route("mail")]
-public class MailController(BpqUiService bpqUiService, BpqTelnetClient bpqTelnetClient, ILogger<MailController> logger, BpqNativeApiService bpqNativeApiService) : ControllerBase
+public class MailController(BpqUiService bpqUiService, BpqTelnetClient bpqTelnetClient, ILogger<MailController> logger, MailService mailService) : ControllerBase
 {
     /// <summary>
     /// Retrieve mail items by comma separated id.
@@ -20,6 +20,8 @@ public class MailController(BpqUiService bpqUiService, BpqTelnetClient bpqTelnet
     [ProducesResponseType(typeof(MailEntity[]), 200)]
     public async Task<IActionResult> GetMailItems(string ids)
     {
+        logger.LogInformation("GET /mail/{ids}", ids);
+
         var idsSplit = ids.Split(",", StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
 
         foreach (var id in idsSplit)
@@ -41,18 +43,8 @@ public class MailController(BpqUiService bpqUiService, BpqTelnetClient bpqTelnet
 
         try
         {
-            var items = await bpqUiService.GetWebmailItems(header.Value.User, header.Value.Password, idInts);
-            var token = await bpqNativeApiService.RequestMailToken(header.Value.User, header.Value.Password);
-            var nativeResponse = await bpqNativeApiService.GetMessagesV1(token.AccessToken);
-
-            foreach (var item in items)
-            {
-                var nativeItem = nativeResponse.Messages.Single(m => m.Id == item.Id);
-                item.DateTime = DateTime.UnixEpoch.AddSeconds(nativeItem.Received);
-            }
-
+            var items = await mailService.GetMail(header.Value.User, header.Value.Password, idInts);
             logger.LogInformation("Call to /mail/{{ids}} returned {Count} items", items.Count);
-
             return Ok(items);
         }
         catch (LoginFailedException)
@@ -69,6 +61,8 @@ public class MailController(BpqUiService bpqUiService, BpqTelnetClient bpqTelnet
     [ProducesResponseType(typeof(MailListEntity[]), 200)]
     public async Task<IActionResult> GetAllTypesList(DataSource? dataSource = DataSource.Ui)
     {
+        logger.LogInformation("GET /mail");
+
         var header = HttpContext.ParseBasicAuthHeader();
 
         if (header == null)
@@ -114,6 +108,8 @@ public class MailController(BpqUiService bpqUiService, BpqTelnetClient bpqTelnet
     [ProducesResponseType(typeof(MailListEntity[]), 200)]
     public async Task<IActionResult> GetBulletinsList()
     {
+        logger.LogInformation("GET /mail/bulletins");
+
         var header = HttpContext.ParseBasicAuthHeader();
 
         if (header == null)
@@ -142,6 +138,8 @@ public class MailController(BpqUiService bpqUiService, BpqTelnetClient bpqTelnet
     [ProducesResponseType(typeof(MailListEntity[]), 200)]
     public async Task<IActionResult> GetPersonalMailList()
     {
+        logger.LogInformation("GET /mail/personal");
+
         var header = HttpContext.ParseBasicAuthHeader();
 
         if (header == null)
@@ -169,6 +167,8 @@ public class MailController(BpqUiService bpqUiService, BpqTelnetClient bpqTelnet
     [ProducesResponseType(typeof(MailListEntity[]), 200)]
     public async Task<IActionResult> GetMyInbox()
     {
+        logger.LogInformation("GET /mail/inbox");
+
         var header = HttpContext.ParseBasicAuthHeader();
 
         if (header == null)
@@ -196,6 +196,8 @@ public class MailController(BpqUiService bpqUiService, BpqTelnetClient bpqTelnet
     [ProducesResponseType(typeof(MailListEntity[]), 200)]
     public async Task<IActionResult> GetMySentList()
     {
+        logger.LogInformation("GET /mail/sent");
+
         var header = HttpContext.ParseBasicAuthHeader();
 
         if (header == null)
@@ -221,6 +223,8 @@ public class MailController(BpqUiService bpqUiService, BpqTelnetClient bpqTelnet
     [HttpPost("send")]
     public async Task<IActionResult> SendMessage([FromBody] SendMailEntity mail)
     {
+        logger.LogInformation("POST /mail/send");
+
         var header = HttpContext.ParseBasicAuthHeader();
 
         if (header == null)
@@ -246,8 +250,10 @@ public class MailController(BpqUiService bpqUiService, BpqTelnetClient bpqTelnet
     /// <param name="read"></param>
     /// <returns></returns>
     [HttpPatch("{id}")]
-    public IActionResult MarkReadState(int id, [FromQuery]bool? read)
+    public async Task<IActionResult> MarkReadState(int id, [FromQuery]bool? read)
     {
+        logger.LogInformation("PATCH /mail/{id}", id);
+
         var header = HttpContext.ParseBasicAuthHeader();
 
         if (header == null)
@@ -255,7 +261,15 @@ public class MailController(BpqUiService bpqUiService, BpqTelnetClient bpqTelnet
             return BadRequest("BBS callsign and password required as basic auth header");
         }
 
-        return Ok("not yet implemented");
+        if (read != null)
+        {
+            if (!await mailService.SetReadState(id, read.Value))
+            {
+                return NotFound();
+            }
+        }
+
+        return NoContent();
     }
 }
 

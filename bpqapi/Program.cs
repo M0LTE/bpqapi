@@ -1,4 +1,5 @@
 using bpqapi;
+using bpqapi.Controllers;
 using bpqapi.Services;
 using Microsoft.OpenApi.Models;
 using NLog;
@@ -20,6 +21,7 @@ try
     builder.Logging.ClearProviders();
     builder.Host.UseNLog();
 
+    builder.Services.AddHostedService<DbStartup>();
     builder.Services.AddHostedService<BpqConnectivityCheck>();
     builder.Services.AddHostedService<ConfigCheckService>();
     builder.Services.AddControllers();
@@ -34,6 +36,8 @@ try
     builder.Services.AddSingleton<BpqUiService>();
     builder.Services.AddSingleton<BpqNativeApiService>();
     builder.Services.AddSingleton<BpqMailCache>();
+    builder.Services.AddSingleton<MailService>();
+    builder.Services.AddSingleton<MailRepository>();
     builder.Services.AddTransient<BpqTelnetClient>();
     builder.Services.AddHttpClient<BpqUiService>(client =>
     {

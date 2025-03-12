@@ -35,4 +35,9 @@ public record MailEntity
     public string? ContentType { get; init; }
     public string? ContentTransferEncoding { get; init; }
     public required string Body { get; init; }
+
+    /// <summary>
+    /// This is to store the mail client's read status.
+    /// </summary>
+    public bool Read { get; set; }
 }
