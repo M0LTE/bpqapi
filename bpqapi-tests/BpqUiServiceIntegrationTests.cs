@@ -10,7 +10,7 @@ public class BpqUiServiceIntegrationTests
     private readonly BpqUiService target;
     public BpqUiServiceIntegrationTests()
     {
-        target = new BpqUiService(new Options(new Uri("http://gb7rdg-node:8008")), new HttpClient(new HttpClientHandler { AutomaticDecompression = DecompressionMethods.Deflate | DecompressionMethods.GZip }), Mock.Of<ILogger<BpqUiService>>(), Mock.Of<BpqMailCache>());
+        target = new BpqUiService(new Options(new Uri("http://gb7rdg-node:8008")), new HttpClient(new HttpClientHandler { AutomaticDecompression = DecompressionMethods.Deflate | DecompressionMethods.GZip }), Mock.Of<ILogger<BpqUiService>>());
     }
 
     [Fact]

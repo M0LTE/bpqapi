@@ -6,7 +6,7 @@ using System.Text;
 
 namespace bpqapi.Services;
 
-public class BpqUiService(IOptions<BpqApiOptions> options, HttpClient httpClient, ILogger<BpqUiService> logger, BpqMailCache cache)
+public class BpqUiService(IOptions<BpqApiOptions> options, HttpClient httpClient, ILogger<BpqUiService> logger)
 {
     private readonly BpqApiOptions options = options.Value;
 
@@ -248,39 +248,31 @@ public class BpqUiService(IOptions<BpqApiOptions> options, HttpClient httpClient
 
     private async Task<MailEntity> GetMail(int id)
     {
-        if (cache.TryGetValue(id, out var cached))
+        var html = await httpClient.GetStringAsync(new Uri(options.Uri, $"WebMail/WM?{lastToken}&{id}"));
+        var result = WebmailParser.Parse(html, logger);
+
+        MailEntity mail;
+
+        if (result.Success)
         {
-            return cached!;
+            mail = result.Value;
         }
         else
         {
-            var html = await httpClient.GetStringAsync(new Uri(options.Uri, $"WebMail/WM?{lastToken}&{id}"));
-            var result = WebmailParser.Parse(html, logger);
-
-            MailEntity mail;
-
-            if (result.Success)
+            mail = new MailEntity
             {
-                mail = result.Value;
-            }
-            else
-            {
-                mail = new MailEntity
-                {
-                    Id = id,
-                    Subject = "Error",
-                    From = "unknown",
-                    To = "unknown",
-                    Date = MonthAndDay.UtcToday,
-                    DateTime = DateTime.UtcNow,
-                    Time = TimeOnly.FromDateTime(DateTime.UtcNow),
-                    Body = $"There was an error while parsing this mail with id {id}:\n\n" + result.Exception?.ToString()
-                };
-            }
-
-            cache.Add(id, mail);
-            return mail;
+                Id = id,
+                Subject = "Error",
+                From = "unknown",
+                To = "unknown",
+                Date = MonthAndDay.UtcToday,
+                DateTime = DateTime.UtcNow,
+                Time = TimeOnly.FromDateTime(DateTime.UtcNow),
+                Body = $"There was an error while parsing this mail with id {id}:\n\n" + result.Exception?.ToString()
+            };
         }
+
+        return mail;
     }
 
     public async Task SendWebmail(string user, string password, SendMailEntity mail)

@@ -8,23 +8,23 @@ public class MailService(BpqUiService bpqUiService, BpqNativeApiService bpqNativ
     public async Task<List<MailEntity>> GetMail(string user, string password, int[] ids)
     {
         var mailFromDb = await mailRepository.GetMailItems(ids);
-        var itemsFromBpq = await bpqUiService.GetWebmailItems(user, password, ids.Except(mailFromDb.Select(s => s.Id)).ToArray());
+        var itemsFromBpqUi = await bpqUiService.GetWebmailItems(user, password, ids.Except(mailFromDb.Select(s => s.Id)).ToArray());
 
-        if (itemsFromBpq.Count != 0)
+        if (itemsFromBpqUi.Count != 0)
         {
             var token = await bpqNativeApiService.RequestMailToken(user, password);
             var nativeResponse = await bpqNativeApiService.GetMessagesV1(token.AccessToken);
 
-            foreach (var item in itemsFromBpq)
+            foreach (var item in itemsFromBpqUi)
             {
                 var nativeItem = nativeResponse.Messages.Single(m => m.Id == item.Id);
                 item.DateTime = DateTime.UnixEpoch.AddSeconds(nativeItem.Received);
             }
             
-            await mailRepository.SaveMailItems(itemsFromBpq);
+            await mailRepository.SaveMailItems(itemsFromBpqUi);
         }
 
-        return itemsFromBpq.Concat(mailFromDb).ToList();
+        return itemsFromBpqUi.Concat(mailFromDb).ToList();
     }
 
     internal async Task<bool> SetReadState(int id, bool value)

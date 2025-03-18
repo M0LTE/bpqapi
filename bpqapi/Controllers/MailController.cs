@@ -20,36 +20,49 @@ public class MailController(BpqUiService bpqUiService, BpqTelnetClient bpqTelnet
     [ProducesResponseType(typeof(MailEntity[]), 200)]
     public async Task<IActionResult> GetMailItems(string ids)
     {
-        logger.LogInformation("GET /mail/{ids}", ids);
-
-        var idsSplit = ids.Split(",", StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
-
-        foreach (var id in idsSplit)
-        {
-            if (!int.TryParse(id, out _))
-            {
-                return BadRequest("Invalid ID " + id);
-            }
-        }
-
-        var idInts = idsSplit.Select(int.Parse).ToArray();
-
-        var header = HttpContext.ParseBasicAuthHeader();
-
-        if (header == null)
-        {
-            return BadRequest("BBS callsign and password required as basic auth header");
-        }
-
+        int? itemCount = null;
         try
         {
-            var items = await mailService.GetMail(header.Value.User, header.Value.Password, idInts);
-            logger.LogInformation("Call to /mail/{{ids}} returned {Count} items", items.Count);
-            return Ok(items);
+            var idsSplit = ids.Split(",", StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+
+            foreach (var id in idsSplit)
+            {
+                if (!int.TryParse(id, out _))
+                {
+                    return BadRequest("Invalid ID " + id);
+                }
+            }
+
+            var idInts = idsSplit.Select(int.Parse).ToArray();
+
+            var header = HttpContext.ParseBasicAuthHeader();
+
+            if (header == null)
+            {
+                return BadRequest("BBS callsign and password required as basic auth header");
+            }
+
+            try
+            {
+                var items = await mailService.GetMail(header.Value.User, header.Value.Password, idInts);
+                itemCount = items.Count;
+                return Ok(items);
+            }
+            catch (LoginFailedException)
+            {
+                return Unauthorized("BPQ rejected that BBS login");
+            }
         }
-        catch (LoginFailedException)
+        finally
         {
-            return Unauthorized("BPQ rejected that BBS login");
+            if (itemCount != null)
+            {
+                logger.LogInformation("GET /mail/{ids}: {rows} rows", ids, itemCount);
+            }
+            else
+            {
+                logger.LogWarning("GET /mail/{ids}: error", ids);
+            }
         }
     }
 
@@ -86,7 +99,7 @@ public class MailController(BpqUiService bpqUiService, BpqTelnetClient bpqTelnet
             try
             {
                 var items = await bpqUiService.GetWebmailAllMailList(header.Value.User, header.Value.Password);
-                logger.LogInformation("Call to /mail returned {Count} items", items.Length);
+                logger.LogInformation("Call to /mail returned {Count} rows", items.Length);
                 return Ok(items);
             }
             catch (LoginFailedException)
@@ -108,24 +121,38 @@ public class MailController(BpqUiService bpqUiService, BpqTelnetClient bpqTelnet
     [ProducesResponseType(typeof(MailListEntity[]), 200)]
     public async Task<IActionResult> GetBulletinsList()
     {
-        logger.LogInformation("GET /mail/bulletins");
-
-        var header = HttpContext.ParseBasicAuthHeader();
-
-        if (header == null)
-        {
-            return BadRequest("BBS callsign and password required as basic auth header");
-        }
+        int? itemCount = null;
 
         try
         {
-            var items = await bpqUiService.GetWebmailBullsList(header.Value.User, header.Value.Password);
-            logger.LogInformation("Call to /mail/bulletins returned {Count} items", items.Length);
-            return Ok(items);
+            var header = HttpContext.ParseBasicAuthHeader();
+
+            if (header == null)
+            {
+                return BadRequest("BBS callsign and password required as basic auth header");
+            }
+
+            try
+            {
+                var items = await bpqUiService.GetWebmailBullsList(header.Value.User, header.Value.Password);
+                itemCount = items.Length;
+                return Ok(items);
+            }
+            catch (LoginFailedException)
+            {
+                return Unauthorized("BPQ rejected that BBS login");
+            }
         }
-        catch (LoginFailedException)
+        finally
         {
-            return Unauthorized("BPQ rejected that BBS login");
+            if (itemCount != null)
+            {
+                logger.LogInformation("GET /mail/bulletins: {rows} rows", itemCount);
+            }
+            else
+            {
+                logger.LogWarning("GET /mail/bulletins: error");
+            }
         }
     }
 
@@ -150,7 +177,7 @@ public class MailController(BpqUiService bpqUiService, BpqTelnetClient bpqTelnet
         try
         {
             var items = await bpqUiService.GetWebmailPersonalsList(header.Value.User, header.Value.Password);
-            logger.LogInformation("Call to /mail/personal returned {Count} items", items.Length);
+            logger.LogInformation("Call to /mail/personal returned {Count} rows", items.Length);
             return Ok(items);
         }
         catch (LoginFailedException)
@@ -167,24 +194,39 @@ public class MailController(BpqUiService bpqUiService, BpqTelnetClient bpqTelnet
     [ProducesResponseType(typeof(MailListEntity[]), 200)]
     public async Task<IActionResult> GetMyInbox()
     {
-        logger.LogInformation("GET /mail/inbox");
-
-        var header = HttpContext.ParseBasicAuthHeader();
-
-        if (header == null)
-        {
-            return BadRequest("BBS callsign and password required as basic auth header");
-        }
+        int? itemCount = null;
 
         try
         {
-            var items = await bpqUiService.GetWebmailInbox(header.Value.User, header.Value.Password);
-            logger.LogInformation("Call to /mail/inbox returned {Count} items", items.Length);
-            return Ok(items);
+
+            var header = HttpContext.ParseBasicAuthHeader();
+
+            if (header == null)
+            {
+                return BadRequest("BBS callsign and password required as basic auth header");
+            }
+
+            try
+            {
+                var items = await bpqUiService.GetWebmailInbox(header.Value.User, header.Value.Password);
+                itemCount = items.Length;
+                return Ok(items);
+            }
+            catch (LoginFailedException)
+            {
+                return Unauthorized("BPQ rejected that BBS login");
+            }
         }
-        catch (LoginFailedException)
+        finally
         {
-            return Unauthorized("BPQ rejected that BBS login");
+            if (itemCount != null)
+            {
+                logger.LogInformation("GET /mail/inbox: {rows} rows", itemCount);
+            }
+            else
+            {
+                logger.LogWarning("GET /mail/inbox: error");
+            }
         }
     }
 
@@ -208,7 +250,7 @@ public class MailController(BpqUiService bpqUiService, BpqTelnetClient bpqTelnet
         try
         {
             var items = await bpqUiService.GetWebmailSentMail(header.Value.User, header.Value.Password);
-            logger.LogInformation("Call to /mail/sent returned {Count} items", items.Length);
+            logger.LogInformation("Call to /mail/sent returned {Count} rows", items.Length);
             return Ok(items);
         }
         catch (LoginFailedException)

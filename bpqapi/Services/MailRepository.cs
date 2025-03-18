@@ -58,9 +58,6 @@ public class MailRepository(ILogger<MailRepository> logger)
             };
 
             await connection.InsertOrReplaceAsync(dbItem);
-
-            //await connection.ExecuteAsync("insert or replace into mail (id, state, mid, bid, datetime, type, `from`, `to`, subject, mbo, contenttype, contenttransferencoding, body) " +
-                //"values (@Id, @State, @Mid, @Bid, @DateTime, @Type, @From, @To, @Subject, @Mbo, @ContentType, @ContentTransferEncoding, @Body)", item);
         }
 
         logger.LogInformation("Saved {0} mail items to db", items.Count);

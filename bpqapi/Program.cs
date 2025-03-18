@@ -8,6 +8,27 @@ using System.Net;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
+/*Console.WriteLine("Working directory: " + Directory.GetCurrentDirectory());
+TryWrite("/app/data");
+
+static void TryWrite(string directory)
+{
+    var file = Path.Combine(directory, "deleteme");
+    Console.WriteLine("Trying to write to " + file);
+
+    try
+    {
+        File.WriteAllText(file, "hello world");
+        Console.WriteLine("Success writing to " + file);
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"Error writing to {file}: {ex.Message}");
+    }
+}
+
+return;*/
+
 var logger = LogManager.Setup().LoadConfigurationFromAppSettings().GetCurrentClassLogger();
 logger.Debug("init main");
 
@@ -35,7 +56,6 @@ try
     builder.Services.Configure<BpqApiOptions>(builder.Configuration.GetSection("bpq"));
     builder.Services.AddSingleton<BpqUiService>();
     builder.Services.AddSingleton<BpqNativeApiService>();
-    builder.Services.AddSingleton<BpqMailCache>();
     builder.Services.AddSingleton<MailService>();
     builder.Services.AddSingleton<MailRepository>();
     builder.Services.AddTransient<BpqTelnetClient>();
